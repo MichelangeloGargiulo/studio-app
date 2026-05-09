@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Studio – App Ufficio</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -25,25 +23,6 @@
 }
 html,body{height:100%;margin:0}
 body{background:var(--paper);font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden}
-
-/* PASSWORD OVERLAY */
-.pw-overlay{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;background-image:radial-gradient(ellipse at 30% 50%,rgba(184,134,11,.08),transparent 55%)}
-.pw-card{background:#1C1814;border:1px solid rgba(184,134,11,.2);border-radius:16px;padding:28px 22px;max-width:400px;width:100%;text-align:center}
-.pw-icon{font-size:48px;margin-bottom:8px}
-.pw-title{font-family:var(--serif);font-size:20px;color:#fff;font-weight:400;margin-bottom:4px;font-style:italic}
-.pw-sub{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.5}
-.pw-input{width:100%;padding:14px;border:1px solid rgba(184,134,11,.4);border-radius:11px;background:#0F0D0A;color:#fff;font-family:var(--sans);font-size:16px;text-align:center;outline:none;letter-spacing:6px;font-weight:700;transition:border-color .2s}
-.pw-input:focus{border-color:var(--gold)}
-.pw-input::placeholder{color:rgba(255,255,255,.15);letter-spacing:2px;font-weight:300;font-size:14px}
-.pw-error{font-size:11px;color:var(--rose);margin-top:6px;display:none}
-.pw-btn{width:100%;padding:14px;border:none;border-radius:11px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;background:linear-gradient(135deg,var(--gold),#8B6914);color:#fff;box-shadow:0 4px 20px rgba(184,134,11,.3);transition:all .2s}
-.pw-btn:active{transform:scale(.97)}
-.pw-hint{font-size:10px;color:rgba(255,255,255,.3);margin-top:8px}
-
-/* LANGUAGE BAR */
-.lang-bar{display:flex;justify-content:flex-end;padding:4px 20px;gap:4px;flex-shrink:0;background:var(--ink);border-bottom:1px solid #1a1a1a}
-.lang-btn{padding:4px 10px;border-radius:5px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.35);font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px;text-transform:uppercase}
-.lang-btn.active{background:rgba(184,134,11,.15);color:var(--gold-lt);border-color:rgba(184,134,11,.25)}
 
 /* IMPORT SCREEN */
 #importScreen{position:fixed;inset:0;background:var(--ink);z-index:9000;display:flex;align-items:center;justify-content:center;padding:32px;background-image:radial-gradient(ellipse at 25% 60%,rgba(184,134,11,.08),transparent 55%)}
@@ -73,7 +52,7 @@ input[type=file]{display:none}
 .i-btn:hover{transform:translateY(-1px)}
 .i-demo{background:rgba(255,255,255,.07);color:#aaa;border:1px solid rgba(255,255,255,.1)}
 .i-go{background:linear-gradient(135deg,var(--gold),#D4A017);color:var(--ink)}
-.i-load{background:rgba(255,255,255,.06);color:#888;border:1px solid rgba(255,255,255,.08)}
+.i-load{background:rgba(255,255,255,.06);color:#888;border:1px solid rgba(255,255,255,.08);margin-top:8px;width:100%}
 
 /* APP */
 #app{display:none;height:100%;flex-direction:column}
@@ -113,7 +92,6 @@ input[type=file]{display:none}
 .kpi-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:8px}
 .kpi-value{font-family:var(--serif);font-size:clamp(20px,3vw,30px);font-weight:400;line-height:1;margin-bottom:4px}
 .kv-r{color:var(--rose)}.kv-g{color:var(--teal)}.kv-b{color:var(--blue)}.kv-a{color:var(--gold)}
-.kpi-note{font-size:11px;color:var(--grey);line-height:1.5}
 .chart-row{display:grid;gap:16px;margin-bottom:20px}
 .chart-row.cols2{grid-template-columns:1fr 1fr}
 .chart-row.cols1{grid-template-columns:1fr}
@@ -124,11 +102,8 @@ input[type=file]{display:none}
 .risk-table th{padding:10px 14px;text-align:left;background:var(--navy);color:#fff;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
 .risk-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
 .risk-table tr:nth-child(even) td{background:var(--cream)}
-.risk-table tr:hover td{background:var(--mgrey)}
 .risk-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px}
-.rp-r{background:var(--rose-lt);color:var(--rose)}
-.rp-g{background:var(--sage-lt);color:var(--sage)}
-.rp-a{background:var(--amber-lt);color:var(--amber)}
+.rp-r{background:var(--rose-lt);color:var(--rose)}.rp-g{background:var(--sage-lt);color:var(--sage)}.rp-a{background:var(--amber-lt);color:var(--amber)}
 .alert{border-radius:10px;padding:14px 16px;margin-bottom:14px}
 .al-r{background:var(--rose-lt);border:1px solid rgba(139,32,32,.2)}
 .al-g{background:var(--sage-lt);border:1px solid rgba(29,71,49,.2)}
@@ -168,18 +143,15 @@ input[type=file]{display:none}
 .toast.show{opacity:1}
 .toast.err{background:var(--rose)}
 
-/* PRINT */
 @media print{
   body{background:#fff;font-size:11px}
   .sidebar{display:none}.tb-btns{display:none}
   .main{padding:16px}.panel{display:block!important}
   .panel-title{font-size:20px}.chart-wrap{height:180px}
   .kpi-grid{grid-template-columns:repeat(4,1fr)}.chart-row.cols2{grid-template-columns:1fr 1fr}
-  .kpi,.chart-box,.action,.person-card{border:1px solid #ddd!important;background:#fff!important}
 }
-
 @media(max-width:900px){
-  .sidebar{width:200px;font-size:12px}
+  .sidebar{width:200px}
   .chart-row.cols2{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .main{padding:16px}
@@ -188,31 +160,12 @@ input[type=file]{display:none}
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
-<div class="pw-overlay" id="pwGate">
-  <div class="pw-card">
-    <div class="pw-icon">🔐</div>
-    <div class="pw-title" data-lang="pw_title">Accesso Studio</div>
-    <div class="pw-sub" data-lang="pw_sub">Inserisci il codice di accesso dello studio professionale</div>
-    <input type="password" class="pw-input" id="pwInput" placeholder="••••••" maxlength="12" autocomplete="off">
-    <div class="pw-error" id="pwError" data-lang="pw_error">Codice non valido. Riprova.</div>
-    <button class="pw-btn" onclick="checkPassword()" data-lang="pw_btn">Accedi</button>
-    <div class="pw-hint" data-lang="pw_hint">Codice predefinito: <strong>1234</strong></div>
-  </div>
-</div>
-
-<!-- LANGUAGE BAR -->
-<div class="lang-bar" id="langBar" style="display:none">
-  <button class="lang-btn active" onclick="setLang('it')">🇮🇹 IT</button>
-  <button class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
-</div>
-
 <!-- IMPORT SCREEN -->
-<div id="importScreen" style="display:none">
+<div id="importScreen">
   <div class="imp-inner">
     <div class="imp-logo">Studio · App Ufficio</div>
-    <h1 class="imp-title" data-lang="imp_title">Elabora il<br>report dal cliente</h1>
-    <p class="imp-sub" data-lang="imp_sub">Importa i dati raccolti con l'app mobile · Il sistema genera automaticamente analisi, grafici e piano d'azione</p>
+    <h1 class="imp-title">Elabora il<br>report dal cliente</h1>
+    <p class="imp-sub">Importa i dati raccolti con l'app mobile · Il sistema genera automaticamente analisi, grafici e piano d'azione</p>
     <div class="type-row">
       <div class="type-card sel" id="tc-fam" onclick="setType('famiglie')"><div class="tc-icon">🏠</div><div class="tc-label">Famiglie</div><div class="tc-sub">Curva Modigliani</div></div>
       <div class="type-card" id="tc-az" onclick="setType('azienda')"><div class="tc-icon">🏢</div><div class="tc-label">Aziende</div><div class="tc-sub">Ciclo Damodaran</div></div>
@@ -227,13 +180,14 @@ input[type=file]{display:none}
         <button class="i-btn i-demo" onclick="loadDemo()">▶ Demo</button>
         <button class="i-btn i-go" onclick="importData()">Genera report →</button>
       </div>
-      <button class="i-btn i-load" style="margin-top:8px" onclick="loadLast()">📂 Carica ultimo report</button>
+      <button class="i-btn i-load" onclick="loadLast()">📂 Carica ultimo report</button>
     </div>
+    <p style="font-size:11px;color:#333;text-align:center;line-height:1.8">I dati non vengono trasmessi — tutto elaborato in locale.</p>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app">
   <div class="topbar">
     <div class="tb-logo">Studio</div>
     <div id="tbType" class="tb-type tbt-fam">FAMIGLIE</div>
@@ -256,7 +210,7 @@ input[type=file]{display:none}
         <div class="people-grid" id="ov-people"></div>
         <div class="chart-row cols2">
           <div class="chart-box"><div class="cb-title" id="curve-title">Curva di Modigliani</div><div class="chart-wrap"><canvas id="mainCurve"></canvas></div></div>
-          <div class="chart-box"><div class="cb-title">Struttura spese mensili</div><div class="chart-wrap"><canvas id="costDonut"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title">Struttura spese</div><div class="chart-wrap"><canvas id="costDonut"></canvas></div></div>
         </div>
       </div>
 
@@ -264,8 +218,8 @@ input[type=file]{display:none}
         <div class="panel-title">Analisi dei <em>rischi</em></div>
         <p class="panel-sub" id="risk-sub"></p>
         <div class="chart-row cols2">
-          <div class="chart-box"><div class="cb-title">Mappa rischi – Radar</div><div class="chart-wrap"><canvas id="riskRadar"></canvas></div></div>
-          <div class="chart-box"><div class="cb-title">Gap copertura vs fabbisogno</div><div class="chart-wrap"><canvas id="gapBar"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title">Mappa rischi</div><div class="chart-wrap"><canvas id="riskRadar"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title">Gap copertura</div><div class="chart-wrap"><canvas id="gapBar"></canvas></div></div>
         </div>
         <table class="risk-table" id="riskTable"></table>
       </div>
@@ -303,7 +257,7 @@ input[type=file]{display:none}
 
       <div class="panel" id="p-dati">
         <div class="panel-title">Dati <em>raccolti</em></div>
-        <p class="panel-sub">Tutti i dati importati dall'app mobile — verificabili e stampabili.</p>
+        <p class="panel-sub">Tutti i dati importati dall'app mobile.</p>
         <table class="data-table" id="rawTable"></table>
       </div>
 
@@ -315,63 +269,19 @@ input[type=file]{display:none}
 
 <script>
 // ═══════════════════════════════════════
-// CONFIG
+// APP STUDIO - SENZA PASSWORD
 // ═══════════════════════════════════════
-var CONFIG={password:'1234'};
-var LANG={
-it:{pw_title:'Accesso Studio',pw_sub:'Inserisci il codice di accesso',pw_error:'Codice non valido',pw_btn:'Accedi',pw_hint:'Password: <strong>1234</strong>'},
-en:{pw_title:'Studio Access',pw_sub:'Enter access code',pw_error:'Invalid code',pw_btn:'Login',pw_hint:'Password: <strong>1234</strong>'}
-};
-var currentLang='it',D={},tipo='famiglie',unlocked=false;
-var CH={},selectedType='famiglie';
+var D={},tipo='famiglie',selectedType='famiglie';
+var CH={};
 
 // ═══════════════════════════════════════
-// PASSWORD - SEMPLICE E DIRETTA
+// INIT
 // ═══════════════════════════════════════
-function checkPassword(){
-  var input=document.getElementById('pwInput');
-  var pw=input.value.trim();
-  console.log('Password inserita:',pw);
-  if(pw===CONFIG.password){
-    console.log('Password OK!');
-    unlocked=true;
-    document.getElementById('pwGate').style.display='none';
-    document.getElementById('langBar').style.display='flex';
-    document.getElementById('importScreen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    document.body.style.overflow='auto';
-  }else{
-    console.log('Password SBAGLIATA');
-    document.getElementById('pwError').style.display='block';
-    input.value='';
-    setTimeout(function(){input.focus();},100);
-  }
-}
-
-// Aspetta che la pagina sia pronta
 window.onload=function(){
-  console.log('App pronta');
-  document.getElementById('pwInput').focus();
-  document.getElementById('pwInput').addEventListener('keydown',function(e){
-    if(e.key==='Enter')checkPassword();
-  });
+  document.getElementById('importScreen').style.display='flex';
+  var saved=localStorage.getItem('studio_last');
+  if(saved){try{var sd=JSON.parse(saved);if(sd.tipo){D=sd;tipo=D.tipo;start();}}catch(e){}}
 };
-
-// ═══════════════════════════════════════
-// LINGUA
-// ═══════════════════════════════════════
-function setLang(l){
-  currentLang=l;
-  document.querySelectorAll('.lang-btn').forEach(function(b){
-    b.classList.toggle('active',b.textContent.indexOf(l.toUpperCase())>=0);
-  });
-  document.querySelectorAll('[data-lang]').forEach(function(el){
-    var k=el.dataset.lang;
-    if(LANG[l]&&LANG[l][k])el.innerHTML=LANG[l][k];
-  });
-  localStorage.setItem('studio_lang',l);
-}
-setLang(currentLang);
 
 // ═══════════════════════════════════════
 // TYPE SELECTOR
@@ -393,17 +303,17 @@ function loadFile(ev){
 }
 function importData(){
   var raw=document.getElementById('codeIn').value.trim();
-  if(!raw){toast('Incolla un codice','err');return;}
+  if(!raw){toast('Incolla un codice o carica un file','err');return;}
   try{
     if(raw.charAt(0)==='{')D=JSON.parse(raw);
     else D=JSON.parse(decodeURIComponent(escape(atob(raw))));
     start();
-  }catch(e){toast('Codice non valido','err');}
+  }catch(e){toast('Codice non valido. Prova Demo.','err');}
 }
 function loadLast(){
   var saved=localStorage.getItem('studio_last');
   if(saved){try{D=JSON.parse(saved);tipo=D.tipo;start();}catch(e){toast('Errore','err');}}
-  else{toast('Nessun report','err');}
+  else{toast('Nessun report salvato','err');}
 }
 function loadDemo(){
   tipo=selectedType;
@@ -411,9 +321,9 @@ function loadDemo(){
   start();
 }
 function loadDemoFam(){
-  D={tipo:'famiglie',data:new Date().toLocaleDateString('it-IT'),q_nome:'Marco Bianchi',q_eta:'42',q_coppia:'S\u00ec',q_partner_nome:'Maria',q_partner_eta:'39',figli:'[{"nome":"Lorenzo","eta":"9"},{"nome":"Sofia","eta":"6"}]',q_reddito:'3200',q_reddito_partner:'1000',q_casa:'Propriet\u00e0 (con mutuo)',q_immobile:'230000',q_risparmi:'52000',q_debiti:'95000',q_rata:'680',q_anni_deb:'16',q_pensione:'1350',q_obiettivo:'280000',q_aspett:'85',q_sp_casa:'900',q_sp_quotidiano:'950',q_sp_figli:'380',q_sp_salute:'130',q_sp_svago:'260',q_categ:'Dipendente privato',q_unione:'Matrimonio civile',q_partner_lavora:'S\u00ec, part-time',q_scuola:'Universit\u00e0 fuori sede',q_genitori:'Solo madre',q_gen_aiuto_si:'S\u00ec',q_gen_aiuto:'250',q_animali:'1 cane',q_animali_costo:'90',q_auto:'2',q_moto:'1',q_bici:'2',q_vacanze:'Europa',q_vacanze_spesa:'5000',q_stabilita:'Abbastanza stabile',q_eta_pens:'67',q_altri_imm:'No',q_risp_tipo:'Mix diversificato',q_eredita:'Forse',q_eredita_val:'120000',q_eredita_tipo:'Immobili',q_testamento:'No, ma ci penso',q_fondo:'No',q_rischio:'Prudente',dream_partner:'Che Maria non debba ricominciare',dream_figli:'Che studino quello che vogliono',dream_se:'Restare autonomo',q_note:'Mutuo sulla prima casa'};
+  D={tipo:'famiglie',data:new Date().toLocaleDateString('it-IT'),q_nome:'Marco Bianchi',q_eta:'42',q_coppia:'Sì',q_partner_nome:'Maria',q_partner_eta:'39',figli:'[{"nome":"Lorenzo","eta":"9"},{"nome":"Sofia","eta":"6"}]',q_reddito:'3200',q_reddito_partner:'1000',q_casa:'Proprietà (con mutuo)',q_immobile:'230000',q_risparmi:'52000',q_debiti:'95000',q_rata:'680',q_anni_deb:'16',q_pensione:'1350',q_obiettivo:'280000',q_aspett:'85',q_sp_casa:'900',q_sp_quotidiano:'950',q_sp_figli:'380',q_sp_salute:'130',q_sp_svago:'260',q_categ:'Dipendente privato',q_unione:'Matrimonio civile',q_partner_lavora:'Sì, part-time',q_scuola:'Università fuori sede',q_genitori:'Solo madre',q_gen_aiuto_si:'Sì',q_gen_aiuto:'250',q_animali:'1 cane',q_animali_costo:'90',q_auto:'2',q_moto:'1',q_bici:'2',q_vacanze:'Europa',q_vacanze_spesa:'5000',q_stabilita:'Abbastanza stabile',q_eta_pens:'67',q_altri_imm:'No',q_risp_tipo:'Mix diversificato',q_eredita:'Forse',q_eredita_val:'120000',q_eredita_tipo:'Immobili',q_testamento:'No, ma ci penso',q_fondo:'No',q_rischio:'Prudente',dream_partner:'Che Maria non debba ricominciare',dream_figli:'Che studino quello che vogliono',dream_se:'Restare autonomo',q_note:'Mutuo sulla prima casa'};
 }
-function loadDemoAz(){D={tipo:'azienda',data:new Date().toLocaleDateString('it-IT'),q_nome_az:'Rossi Costruzioni Srl',q_settore:'Costruzioni / Real Estate',q_ricavi:'1250000',q_costi_op:'980000',q_amm:'45000',q_oneri_fin:'28000',q_pn:'520000',q_debito_fin:'380000',q_cassa:'120000',q_capex:'75000',q_crescita:'0.03',q_multiplo:'6.5',q_orizzonte:'7',q_val_obiettivo:'3000000',q_titolare:'Giovanni Rossi',q_titolare_eta:'48',q_keyman:'No',q_inv_az:'No, dipende da me',q_fideiuss:'S\u00ec, sulla casa',q_successione:'No, ma ci penso',q_obiettivo_az:'Passaggio generazionale',q_timing:'6-10 anni',q_dipend_fam:'Completamente',q_reddito_fam:'6800',q_spese_fam:'4200',q_patr_pers:'280000',q_key_person:'Solo io',q_eredi_az:'S\u00ec, in futuro',q_prev_az:'Solo INPS / cassa',q_sogno_fam:'Che la casa sia salva',q_paura:'Lasciare debiti a mia moglie'};}
+function loadDemoAz(){D={tipo:'azienda',data:new Date().toLocaleDateString('it-IT'),q_nome_az:'Rossi Costruzioni Srl',q_settore:'Costruzioni / Real Estate',q_ricavi:'1250000',q_costi_op:'980000',q_amm:'45000',q_oneri_fin:'28000',q_pn:'520000',q_debito_fin:'380000',q_cassa:'120000',q_capex:'75000',q_crescita:'0.03',q_multiplo:'6.5',q_orizzonte:'7',q_val_obiettivo:'3000000',q_titolare:'Giovanni Rossi',q_titolare_eta:'48',q_keyman:'No',q_inv_az:'No, dipende da me',q_fideiuss:'Sì, sulla casa',q_successione:'No, ma ci penso',q_obiettivo_az:'Passaggio generazionale',q_timing:'6-10 anni',q_dipend_fam:'Completamente',q_reddito_fam:'6800',q_spese_fam:'4200',q_patr_pers:'280000',q_key_person:'Solo io',q_eredi_az:'Sì, in futuro',q_prev_az:'Solo INPS / cassa',q_sogno_fam:'Che la casa sia salva',q_paura:'Lasciare debiti a mia moglie'};}
 
 // ═══════════════════════════════════════
 // START
@@ -425,7 +335,7 @@ function start(){
   buildSidebar();buildTopbar();populate();
   setTimeout(function(){buildChartsForPanel('overview');},300);
   try{localStorage.setItem('studio_last',JSON.stringify(D));}catch(e){}
-  toast('\u2705 Report generato');
+  toast('✅ Report generato');
 }
 function newReport(){
   D={};tipo=selectedType;
@@ -439,16 +349,16 @@ function newReport(){
 // UTILS
 // ═══════════════════════════════════════
 function n(k,d){d=d||0;return parseFloat(D[k])||d;}
-function fmt(v){return '\u20ac '+Math.round(v).toLocaleString('it-IT');}
-function fmtK(v){return v>=1e6?'\u20ac '+(v/1e6).toFixed(2)+' Mln':v>=1000?'\u20ac '+Math.round(v/1000)+'K':fmt(v);}
+function fmt(v){return '€ '+Math.round(v).toLocaleString('it-IT');}
+function fmtK(v){return v>=1e6?'€ '+(v/1e6).toFixed(2)+' Mln':v>=1000?'€ '+Math.round(v/1000)+'K':fmt(v);}
 function figli(){try{return JSON.parse(D.figli||'[]');}catch(e){return[];}}
 function soci(){try{return JSON.parse(D.soci||'[]');}catch(e){return[];}}
 
 // ═══════════════════════════════════════
 // SIDEBAR
 // ═══════════════════════════════════════
-var FAM_MENU=[{id:'overview',icon:'\ud83d\udcca',label:'Panoramica'},{id:'persone',icon:'\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67',label:'Le persone'},{id:'patrimonio',icon:'\ud83c\udfe6',label:'Patrimonio'},{id:'rischi',icon:'\u26a0\ufe0f',label:'Rischi'},{id:'scenari',icon:'\ud83d\udcc8',label:'Scenari'},{id:'piano',icon:'\ud83c\udfaf',label:'Piano'},{id:'dati',icon:'\ud83d\udccb',label:'Dati'}];
-var AZ_MENU=[{id:'overview',icon:'\ud83d\udcca',label:'Panoramica'},{id:'persone',icon:'\ud83d\udc64',label:'Persone'},{id:'patrimonio',icon:'\ud83c\udfe6',label:'Finanza'},{id:'rischi',icon:'\u26a0\ufe0f',label:'Rischi'},{id:'scenari',icon:'\ud83d\udcc8',label:'Scenari'},{id:'piano',icon:'\ud83c\udfaf',label:'Piano'},{id:'dati',icon:'\ud83d\udccb',label:'Dati'}];
+var FAM_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👨‍👩‍👧',label:'Le persone'},{id:'patrimonio',icon:'🏦',label:'Patrimonio'},{id:'rischi',icon:'⚠️',label:'Rischi'},{id:'scenari',icon:'📈',label:'Scenari'},{id:'piano',icon:'🎯',label:'Piano'},{id:'dati',icon:'📋',label:'Dati'}];
+var AZ_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👤',label:'Persone'},{id:'patrimonio',icon:'🏦',label:'Finanza'},{id:'rischi',icon:'⚠️',label:'Rischi'},{id:'scenari',icon:'📈',label:'Scenari'},{id:'piano',icon:'🎯',label:'Piano'},{id:'dati',icon:'📋',label:'Dati'}];
 function buildSidebar(){
   var menu=tipo==='azienda'?AZ_MENU:FAM_MENU;
   document.getElementById('sidebar').innerHTML='<div class="sb-section"><div class="sb-head">Analisi del '+(D.data||new Date().toLocaleDateString('it-IT'))+'</div>'+menu.map(function(m,i){return '<div class="sb-item'+(i===0?' active':'')+'" onclick="showPanel(\''+m.id+'\')"><span class="sb-icon">'+m.icon+'</span>'+m.label+'</div>';}).join('')+'</div>';
@@ -457,7 +367,6 @@ function showPanel(id){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.sb-item').forEach(function(i){i.classList.remove('active');});
   var panel=document.getElementById('p-'+id);if(panel)panel.classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(function(i){if(i.onclick&&i.onclick.toString().indexOf("'"+id+"'")>=0)i.classList.add('active');});
   setTimeout(function(){buildChartsForPanel(id);},150);
 }
 
@@ -470,20 +379,16 @@ function buildTopbar(){
 }
 
 // ═══════════════════════════════════════
-// KPI helper
+// HELPERS
 // ═══════════════════════════════════════
-function kpis(items){
-  return items.map(function(i){return '<div class="kpi '+(i.t||'')+'"><div class="kpi-label">'+i.l+'</div><div class="kpi-value '+(i.cls||'')+'">'+i.v+'</div></div>';}).join('');
-}
-function pplHTML(items){
-  var colors=['#B8860B','#8B2020','#1D4731','#8A4010','#2E6DB4','#1A5F50'];
-  return items.map(function(p,i){return '<div class="person-card" style="flex:1;min-width:150px"><div class="pc-top" style="background:'+(p.col||colors[i%6])+'"></div><div class="pc-role">'+p.role+'</div><div class="pc-name">'+p.name+'</div><div class="pc-detail">'+p.detail+'</div>'+(p.dream?'<div class="pc-dream">"'+p.dream+'"</div>':'')+'</div>';}).join('');
-}
+function kpis(items){return items.map(function(i){return '<div class="kpi '+(i.t||'')+'"><div class="kpi-label">'+i.l+'</div><div class="kpi-value '+(i.cls||'')+'">'+i.v+'</div></div>';}).join('');}
+function pplHTML(items){var colors=['#B8860B','#8B2020','#1D4731','#8A4010'];return items.map(function(p,i){return '<div class="person-card"><div class="pc-top" style="background:'+(p.col||colors[i%4])+'"></div><div class="pc-role">'+p.role+'</div><div class="pc-name">'+p.name+'</div><div class="pc-detail">'+p.detail+'</div>'+(p.dream?'<div class="pc-dream">"'+p.dream+'"</div>':'')+'</div>';}).join('');}
 
 // ═══════════════════════════════════════
-// Abbreviazioni per popolare (stessa logica di prima, compressa)
+// POPULATE
 // ═══════════════════════════════════════
 function populate(){tipo==='azienda'?populateAz():populateFam();buildRawTable();}
+
 function populateFam(){
   var fs=figli(),eta=n('q_eta',40),etaP=n('q_eta_pens',67),asp=n('q_aspett',85);
   var red=n('q_reddito',2800),redP=n('q_reddito_partner',0);
@@ -501,29 +406,23 @@ function populateFam(){
   var fabM=(spTot-inpsRev)*12*aCovM,covM=ris+Math.min(imm*.4,80000);
   var gapM=Math.max(0,fabM-covM),gapTot=Math.max(0,spTot-700);
   var aCovP=gapPensM>0?Math.min(aPens,patPens/(Math.max(1,gapPensM)*12)):aPens,etaEsaur=etaP+aCovP;
-  window._calc={eta:eta,etaP:etaP,asp:asp,red:red,redP:redP,spTot:spTot,spC:spC,spQ:spQ,spF:spF,spS:spS,spSv:spSv,ris:ris,imm:imm,deb:deb,rat:rat,aDeb:aDeb,pen:pen,rend:rend,inf:inf,aLav:aLav,aPens:aPens,rispNM:rispNM,rispNA:rispNA,patNetto:patNetto,patPens:patPens,inpsRev:inpsRev,spePens:spePens,gapPensM:gapPensM,fabM:fabM,covM:covM,gapM:gapM,gapTot:gapTot,aCovP:aCovP,etaEsaur:etaEsaur,fs:fs};
+  window._calc={eta:eta,etaP:etaP,asp:asp,spTot:spTot,ris:ris,imm:imm,deb:deb,rat:rat,aDeb:aDeb,pen:pen,rend:rend,aLav:aLav,aPens:aPens,rispNM:rispNM,rispNA:rispNA,patNetto:patNetto,patPens:patPens,gapPensM:gapPensM,fabM:fabM,covM:covM,gapM:gapM,gapTot:gapTot,etaEsaur:etaEsaur};
+
   document.getElementById('ov-name').textContent=D.q_nome||'cliente';
-  document.getElementById('ov-sub').textContent=(D.q_categ||'')+' \u00b7 '+eta+' anni \u00b7 '+aLav+' anni al pensionamento';
-  document.getElementById('curve-title').textContent='Curva di Modigliani';
-  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Risparmio/mese',v:fmt(rispNM),cls:rispNM>=0?'kv-g':'kv-r',t:rispNM>=0?'kpi-g':'kpi-r'},{l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},{l:'A pensione',v:fmtK(patPens),cls:'kv-a',t:'kpi-a'},{l:'Gap obiettivo',v:fmtK(Math.abs(n('q_obiettivo',200000)-patPens)),cls:patPens>=n('q_obiettivo',200000)?'kv-g':'kv-r',t:patPens>=n('q_obiettivo',200000)?'kpi-g':'kpi-r'}]);
-  var ppl=[{role:'Tu',name:D.q_nome?D.q_nome.split(' ')[0]:'Cliente',detail:eta+' anni \u00b7 '+(D.q_categ||''),dream:D.dream_se,col:'#B8860B'}];
-  if(D.q_partner_nome)ppl.push({role:'Partner',name:D.q_partner_nome,detail:(D.q_partner_eta||'')+' anni',dream:D.dream_partner,col:'#8B2020'});
-  fs.forEach(function(f){ppl.push({role:'Figlio/a',name:f.nome,detail:f.eta+' anni',dream:D.dream_figli,col:'#1D4731'});});
+  document.getElementById('ov-sub').textContent=(D.q_categ||'')+' · '+eta+' anni · '+aLav+' anni al pensionamento';
+  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Risparmio/mese',v:fmt(rispNM),cls:rispNM>=0?'kv-g':'kv-r',t:rispNM>=0?'kpi-g':'kpi-r'},{l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},{l:'A pensione',v:fmtK(patPens),cls:'kv-a',t:'kpi-a'}]);
+  var ppl=[{role:'Tu',name:D.q_nome?D.q_nome.split(' ')[0]:'Cliente',detail:eta+' anni',dream:D.dream_se}];
+  if(D.q_partner_nome)ppl.push({role:'Partner',name:D.q_partner_nome,detail:(D.q_partner_eta||'')+' anni',dream:D.dream_partner});
+  fs.forEach(function(f){ppl.push({role:'Figlio/a',name:f.nome,detail:f.eta+' anni',dream:D.dream_figli});});
   document.getElementById('ov-people').innerHTML=pplHTML(ppl);
   document.getElementById('per-people').innerHTML=pplHTML(ppl);
-  document.getElementById('per-sub').textContent='Le persone al centro.';
-  document.getElementById('risk-sub').textContent='Analisi rischi.';
   document.getElementById('riskTable').innerHTML=riskFam();
-  document.getElementById('sc-sub').textContent='3 scenari su '+aLav+' anni.';
-  document.getElementById('sc-chart-title').textContent='Patrimonio \u2013 3 scenari';
-  document.getElementById('sc-kpis').innerHTML=kpis([{l:'Base',v:fmtK(patPens),cls:'kv-b',t:'kpi-b'},{l:'Ottimistico',v:fmtK(patPens*1.35),cls:'kv-g',t:'kpi-g'},{l:'Pessimistico',v:fmtK(Math.max(0,patPens*.55)),cls:'kv-r',t:'kpi-r'}]);
-  document.getElementById('pat-sub').textContent='Composizione patrimonio.';
-  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Risparmi',v:fmt(ris),cls:'kv-g',t:'kpi-g'},{l:'Immobili',v:fmt(imm),cls:'kv-b',t:'kpi-b'},{l:'Debiti',v:fmt(deb),cls:'kv-r',t:'kpi-r'},{l:'Netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'}]);
-  document.getElementById('pat-chart2-title').textContent='Debiti su '+aDeb+' anni';
-  document.getElementById('plan-sub').textContent='Azioni prioritarie.';
+  document.getElementById('sc-kpis').innerHTML=kpis([{l:'Base',v:fmtK(patPens),cls:'kv-b'},{l:'Ottimistico',v:fmtK(patPens*1.35),cls:'kv-g'},{l:'Pessimistico',v:fmtK(Math.max(0,patPens*.55)),cls:'kv-r'}]);
+  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Risparmi',v:fmt(ris),cls:'kv-g'},{l:'Immobili',v:fmt(imm),cls:'kv-b'},{l:'Debiti',v:fmt(deb),cls:'kv-r'},{l:'Netto',v:fmtK(patNetto),cls:'kv-g'}]);
   document.getElementById('actionList').innerHTML=actsFam();
-  document.getElementById('nextStep').innerHTML='Secondo incontro con <strong>'+(D.q_nome?D.q_nome.split(' ')[0]:'cliente')+'</strong>'+(D.q_partner_nome?' e '+D.q_partner_nome:'')+'. Priorità: colmare gap vita ('+fmtK(gapM)+').';
+  document.getElementById('nextStep').innerHTML='Incontro con <strong>'+(D.q_nome?D.q_nome.split(' ')[0]:'cliente')+'</strong>. Priorità: colmare gap protezione ('+fmtK(gapM)+').';
 }
+
 function populateAz(){
   var ric=n('q_ricavi',1e6),cop=n('q_costi_op',8e5),amm=n('q_amm',4e4),onf=n('q_oneri_fin',2e4);
   var ebitda=Math.max(0,ric-cop),ebit=Math.max(0,ric-cop-amm),nopat=ebit*(1-0.24);
@@ -531,84 +430,96 @@ function populateAz(){
   var pn=n('q_pn',4e5),attivo=n('q_attivo',1.2e6);
   var mult=n('q_multiplo',6.5),ev=Math.max(0,ebitda*mult),eqVal=Math.max(0,ev-debFin+cassa);
   var cre=n('q_crescita',0.03),oriz=n('q_orizzonte',7);
-  var patPers=n('q_patr_pers',2e5),rFam=n('q_reddito_fam',5e3),sFam=n('q_spese_fam',3.5e3);
-  var valObj=n('q_val_obiettivo',2e6);
-  window._calc={ric:ric,cop:cop,amm:amm,onf:onf,ebitda:ebitda,ebit:ebit,nopat:nopat,fcf:fcf,debFin:debFin,cassa:cassa,pn:pn,attivo:attivo,mult:mult,ev:ev,eqVal:eqVal,cre:cre,oriz:oriz,patPers:patPers,rFam:rFam,sFam:sFam,valObj:valObj};
+  var patPers=n('q_patr_pers',2e5),valObj=n('q_val_obiettivo',2e6);
+  window._calc={ric:ric,ebitda:ebitda,fcf:fcf,debFin:debFin,cassa:cassa,pn:pn,attivo:attivo,mult:mult,ev:ev,eqVal:eqVal,cre:cre,oriz:oriz,patPers:patPers,valObj:valObj};
+
   document.getElementById('ov-name').textContent=D.q_nome_az||'azienda';
-  document.getElementById('ov-sub').textContent=(D.q_settore||'')+' \u00b7 '+(D.q_forma||'')+' \u00b7 '+(D.q_fase||'');
-  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Ricavi',v:fmtK(ric),cls:'kv-b',t:'kpi-b'},{l:'EBITDA',v:fmtK(ebitda),cls:ebitda>0?'kv-g':'kv-r',t:ebitda>0?'kpi-g':'kpi-r'},{l:'EV',v:fmtK(ev),cls:'kv-a',t:'kpi-a'},{l:'Equity',v:fmtK(eqVal),cls:'kv-g',t:'kpi-g'}]);
-  var ppl=[{role:'Titolare',name:D.q_titolare||'Titolare',detail:(D.q_titolare_eta||'')+' anni',dream:D.q_sogno_fam,col:'#B8860B'}];
+  document.getElementById('ov-sub').textContent=(D.q_settore||'')+' · '+(D.q_fase||'');
+  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Ricavi',v:fmtK(ric),cls:'kv-b'},{l:'EBITDA',v:fmtK(ebitda),cls:ebitda>0?'kv-g':'kv-r'},{l:'EV',v:fmtK(ev),cls:'kv-a'},{l:'Equity',v:fmtK(eqVal),cls:'kv-g'}]);
+  var ppl=[{role:'Titolare',name:D.q_titolare||'Titolare',detail:(D.q_titolare_eta||'')+' anni',dream:D.q_sogno_fam}];
   document.getElementById('ov-people').innerHTML=pplHTML(ppl);
   document.getElementById('per-people').innerHTML=pplHTML(ppl);
-  document.getElementById('per-sub').textContent='Struttura persone chiave.';
   document.getElementById('riskTable').innerHTML=riskAz();
-  document.getElementById('sc-kpis').innerHTML=kpis([{l:'EV base',v:fmtK(ev),cls:'kv-b',t:'kpi-b'},{l:'EV ott.',v:fmtK(ev*1.4*Math.pow(1+cre*1.4,oriz)),cls:'kv-g',t:'kpi-g'},{l:'EV pess.',v:fmtK(Math.max(0,ev*.6*Math.pow(1+Math.max(-.05,cre*.4),oriz))),cls:'kv-r',t:'kpi-r'}]);
-  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Attivo',v:fmtK(attivo),cls:'kv-b',t:'kpi-b'},{l:'PN',v:fmtK(pn),cls:'kv-g',t:'kpi-g'},{l:'Debito',v:fmtK(debFin),cls:'kv-r',t:'kpi-r'},{l:'Pers.',v:fmtK(patPers),cls:'kv-a',t:'kpi-a'}]);
-  document.getElementById('plan-sub').textContent='Piano d\'azione.';
+  document.getElementById('sc-kpis').innerHTML=kpis([{l:'EV base',v:fmtK(ev),cls:'kv-b'},{l:'EV ott.',v:fmtK(ev*1.4*Math.pow(1+cre*1.4,oriz)),cls:'kv-g'},{l:'EV pess.',v:fmtK(Math.max(0,ev*.6*Math.pow(1+Math.max(-.05,cre*.4),oriz))),cls:'kv-r'}]);
+  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Attivo',v:fmtK(attivo),cls:'kv-b'},{l:'PN',v:fmtK(pn),cls:'kv-g'},{l:'Debito',v:fmtK(debFin),cls:'kv-r'}]);
   document.getElementById('actionList').innerHTML=actsAz();
+  document.getElementById('nextStep').innerHTML='Incontro con <strong>'+(D.q_titolare||'titolare')+'</strong> per piano key man, successione e separazione patrimoni.';
 }
 
+// ═══════════════════════════════════════
+// RISK TABLES
+// ═══════════════════════════════════════
 function riskFam(){
   var C=window._calc||{};
-  var mesiRis=C.ris>0?Math.round(C.ris/C.spTot):0;
-  return '<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Importo</th><th>Soluzione</th></tr></thead><tbody>'+
-    [['Morte prematura','Famiglia',C.gapM<1?'Sufficiente':'Scoperto',C.gapM<1?'g':'r',C.gapM<1?'Coperto':fmtK(C.gapM)+' GAP','Polizza TCM'],
-     ['Malattia grave','Riserva',mesiRis>=18?'OK':mesiRis>=6?'Parziale':'Critica',mesiRis>=18?'g':mesiRis>=6?'a':'r',mesiRis+' mesi','Dread Disease'],
-     ['Invalidità','Reddito',C.gapTot<500?'OK':'Rischio',C.gapTot<500?'g':'r',fmt(C.gapTot)+'/mese','Polizza IPP/IPT'],
-     ['Longevità','Pensione',C.etaEsaur>=C.asp?'OK':'Rischio',C.etaEsaur>=C.asp?'g':'r',Math.round(C.etaEsaur)+' anni','Fondo + LTC']]
-    .map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td><span class="risk-pill rp-'+r[3]+'">'+r[2]+'</span></td><td>'+r[4]+'</td><td style="color:var(--teal);font-weight:600">'+r[5]+'</td></tr>';}).join('')+'</tbody>';
+  return '<thead><tr><th>Rischio</th><th>Stato</th><th>Importo</th><th>Soluzione</th></tr></thead><tbody>'+[
+    ['Morte','Scoperto',fmtK(C.gapM||0)+' GAP','Polizza TCM'],
+    ['Malattia grave','Critica',Math.round(C.ris>0?C.ris/C.spTot:0)+' mesi','Dread Disease'],
+    ['Invalidità','Rischio',fmt(C.gapTot||0)+'/mese','Polizza IPT'],
+    ['Longevità','Rischio',Math.round(C.etaEsaur||0)+' anni','Fondo + LTC']
+  ].map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td><span class="risk-pill rp-r">'+r[1]+'</span></td><td>'+r[2]+'</td><td style="color:var(--teal);font-weight:600">'+r[3]+'</td></tr>';}).join('')+'</tbody>';
 }
 function riskAz(){
-  return '<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Note</th><th>Soluzione</th></tr></thead><tbody>'+
-    [['Key person','Titolare',D.q_keyman==='S\u00ec'?'Coperta':'Scoperta',D.q_keyman==='S\u00ec'?'g':'r','Rischio valore','Polizza key man'],
-     ['Invalidità','Continuità',D.q_inv_az==='S\u00ec, ho un team'?'OK':'Critica',D.q_inv_az==='S\u00ec, ho un team'?'g':'r','Dipende da te','Piano + IPT'],
-     ['Successione','Passaggio',D.q_successione==='S\u00ec, formalizzato'?'OK':'Aperta',D.q_successione==='S\u00ec, formalizzato'?'g':'a',D.q_timing||'-','Piano successione'],
-     ['Garanzie','Patrimonio',D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0?'Critico':'OK',D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0?'r':'g',D.q_garanzie||'-','Separazione']]
-    .map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td><span class="risk-pill rp-'+r[3]+'">'+r[2]+'</span></td><td>'+r[4]+'</td><td style="color:var(--teal);font-weight:600">'+r[5]+'</td></tr>';}).join('')+'</tbody>';
+  return '<thead><tr><th>Rischio</th><th>Stato</th><th>Note</th><th>Soluzione</th></tr></thead><tbody>'+[
+    ['Key person','Scoperta','Rischio valore','Polizza key man'],
+    ['Invalidità','Critica','Dipende da te','Piano + IPT'],
+    ['Successione','Aperta',D.q_timing||'-','Piano successione'],
+    ['Garanzie','Critico',D.q_garanzie||'-','Separazione patrimoni']
+  ].map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td><span class="risk-pill rp-r">'+r[1]+'</span></td><td>'+r[2]+'</td><td style="color:var(--teal);font-weight:600">'+r[3]+'</td></tr>';}).join('')+'</tbody>';
 }
+
+// ═══════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════
 function actsFam(){
-  var C=window._calc||{},acts=[];
-  if(C.gapM>30000)acts.push({i:'\ud83d\udee1\ufe0f',t:'Polizza TCM \u00b7 '+fmtK(C.gapM),p:'Protezione famiglia. Gap: '+fmtK(C.gapM)+'.',c:D.dream_partner,tag:'PRIORIT\u00c0',tc:'at-now'});
-  acts.push({i:'\ud83c\udfe5',t:'Dread Disease',p:'Riserva: '+(C.ris>0?Math.round(C.ris/C.spTot):0)+' mesi.',c:null,tag:'ENTRO 60 GG',tc:'at-now'});
-  acts.push({i:'\u26a1',t:'Polizza IPT',p:'Gap invalidit\u00e0: '+fmt(C.gapTot)+'/mese.',c:D.dream_se,tag:'ENTRO 60 GG',tc:'at-now'});
-  if(C.gapPensM>200)acts.push({i:'\ud83d\udcc8',t:'Fondo pensione',p:'Gap: '+fmt(C.gapPensM)+'/mese.',c:null,tag:'ENTRO 3 MESI',tc:'at-soon'});
-  acts.push({i:'\ud83e\uddd3',t:'Polizza LTC',p:'Costo medio \u20ac2.800/mese \u00d7 8 anni.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
-  return acts.map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p>'+(a.c?'<div class="a-cost">'+a.c+'</div>':'')+'<div class="a-tag '+a.tc+'">\u25b8 '+a.tag+'</div></div></div>';}).join('');
+  var C=window._calc||{};
+  return [
+    {i:'🛡️',t:'Polizza TCM',p:'Protezione famiglia. Gap: '+fmtK(C.gapM||0)+'.',tag:'PRIORITÀ'},
+    {i:'🏥',t:'Dread Disease',p:'Capitale alla diagnosi per coprire buchi di reddito.',tag:'ENTRO 60 GG'},
+    {i:'⚡',t:'Polizza IPT',p:'Invalidità totale: gap '+fmt(C.gapTot||0)+'/mese.',tag:'ENTRO 60 GG'},
+    {i:'📈',t:'Fondo pensione',p:'Gap pensionistico da colmare con versamenti deducibili.',tag:'ENTRO 3 MESI'},
+    {i:'🧓',t:'Polizza LTC',p:'Proteggere la vecchiaia. 1 anziano su 4 ne ha bisogno.',tag:'ENTRO ANNO'}
+  ].map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p><div class="a-tag at-now">▸ '+a.tag+'</div></div></div>';}).join('');
 }
 function actsAz(){
-  var acts=[];
-  if(D.q_keyman!=='S\u00ec')acts.push({i:'\ud83d\udd11',t:'Polizza key man',p:'Titolare risorsa pi\u00f9 critica.',c:D.q_paura,tag:'PRIORIT\u00c0',tc:'at-now'});
-  if(D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0)acts.push({i:'\ud83c\udfe0',t:'Separazione patrimoni',p:'Casa a garanzia debiti aziendali.',c:D.q_sogno_fam,tag:'PRIORIT\u00c0',tc:'at-now'});
-  acts.push({i:'\u26a1',t:'Polizza IPT titolare',p:'Continuit\u00e0 operativa.',c:null,tag:'ENTRO 60 GG',tc:'at-soon'});
-  acts.push({i:'\ud83d\udcc8',t:'Previdenza titolare',p:'Fondo pensione integrativo.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
-  return acts.map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p>'+(a.c?'<div class="a-cost">'+a.c+'</div>':'')+'<div class="a-tag '+a.tc+'">\u25b8 '+a.tag+'</div></div></div>';}).join('');
+  return [
+    {i:'🔑',t:'Polizza key man',p:'Il titolare è la risorsa più critica. Premi deducibili.',tag:'PRIORITÀ'},
+    {i:'🏠',t:'Separazione patrimoni',p:'Casa del titolare non deve garantire debiti aziendali.',tag:'PRIORITÀ'},
+    {i:'📜',t:'Piano successione',p:'Obiettivo: '+D.q_obiettivo_az+'. Timing: '+D.q_timing+'.',tag:'ENTRO 6 MESI'},
+    {i:'⚡',t:'Polizza IPT titolare',p:'Se il titolare si invalida, l\'azienda deve continuare.',tag:'ENTRO 60 GG'},
+    {i:'📈',t:'Previdenza titolare',p:'Fondo pensione per proteggere il futuro personale.',tag:'ENTRO ANNO'}
+  ].map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p><div class="a-tag at-now">▸ '+a.tag+'</div></div></div>';}).join('');
 }
+
+// ═══════════════════════════════════════
+// RAW TABLE
+// ═══════════════════════════════════════
 function buildRawTable(){
-  var skip=['tipo','data','ora','figli','soci','_ebitda','_ebit','_margin'];
+  var skip=['tipo','data','ora','figli','soci'];
   var rows=[];Object.keys(D).forEach(function(k){if(skip.indexOf(k)<0&&D[k])rows.push([k,D[k]]);});
   document.getElementById('rawTable').innerHTML='<thead><tr><th>Campo</th><th>Valore</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td style="color:var(--grey)">'+r[0]+'</td><td>'+r[1]+'</td></tr>';}).join('')+'</tbody>';
 }
 
 // ═══════════════════════════════════════
-// CHARTS (compressi ma funzionanti)
+// CHARTS (FAM)
 // ═══════════════════════════════════════
 function buildChartsForPanel(pid){if(tipo==='famiglie')buildFamCharts(pid);else buildAzCharts(pid);}
 function buildFamCharts(pid){
   var C=window._calc||{};if(!C.eta)return;
-  var N=C.aLav+C.aPens+1,yrs=[],i,w;for(i=0;i<N;i++)yrs.push(i);
+  var N=C.aLav+C.aPens+1,yrs=[],i;for(i=0;i<N;i++)yrs.push(i);
   if(pid==='overview'||pid==='scenari'){
-    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();w=C.patNetto;var pos=[],neg=[];yrs.forEach(function(i){if(i<=C.aLav)w=w*(1+C.rend)+C.rispNA;else w=Math.max(C.patNetto*-.5,w*(1+C.rend)-C.gapPensM*12);pos.push(Math.max(0,Math.round(w)));neg.push(Math.min(0,Math.round(w)));});
-    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4},{data:neg,fill:true,backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.5)',borderWidth:2,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}});}
+    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var w=C.patNetto,pos=[],neg=[];yrs.forEach(function(i){if(i<=C.aLav)w=w*(1+C.rend)+C.rispNA;else w=Math.max(C.patNetto*-.5,w*(1+C.rend)-C.gapPensM*12);pos.push(Math.max(0,Math.round(w)));neg.push(Math.min(0,Math.round(w)));});
+    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4},{data:neg,fill:true,backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.5)',borderWidth:2,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
   }
   if(pid==='rischi'){
-    var rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();var mesiRis=C.ris>0?C.ris/C.spTot:0;CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Morte','Malattia','Inv.parz','Inv.tot','Longevità','LTC'],datasets:[{label:'Rischio',data:[C.gapM>50000?90:C.gapM>20000?65:35,mesiRis<6?90:mesiRis<12?70:40,C.gapTot>500?80:50,85,C.etaEsaur<C.asp?80:55,85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
-    var gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['Morte','Malattia','LTC'],datasets:[{label:'Disponibile',data:[C.covM,C.ris,C.patPens],backgroundColor:'rgba(26,95,80,.65)',borderRadius:4},{label:'Necessario',data:[C.fabM,C.spTot*12,2800*12*8],backgroundColor:'rgba(139,32,32,.5)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
+    var rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();var mesiRis=C.ris>0?C.ris/C.spTot:0;CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Morte','Malattia','Inv.parz','Inv.tot','Longevità','LTC'],datasets:[{data:[C.gapM>50000?90:35,mesiRis<6?90:40,C.gapTot>500?80:50,85,C.etaEsaur<C.asp?80:55,85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
   }
 }
+
 function buildAzCharts(pid){
   var C=window._calc||{};if(!C.ric)return;
   if(pid==='overview'||pid==='scenari'){
-    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var yrs=[],i;for(i=0;i<=C.oriz;i++)yrs.push(i);CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return 'Anno '+i;}),datasets:[{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre,i)*C.mult);}),borderColor:'rgba(46,109,180,.8)',fill:false,borderWidth:2.5,pointRadius:0,tension:.4,label:'EV Base'},{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre*1.4,i)*C.mult*1.2);}),borderColor:'rgba(26,95,80,.7)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Ott.'},{data:yrs.map(function(i){return Math.max(0,Math.round(C.ebitda*Math.pow(1+Math.max(-.05,C.cre*.4),i)*C.mult*.7));}),borderColor:'rgba(139,32,32,.6)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Pess.'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
+    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var yrs=[],i;for(i=0;i<=C.oriz;i++)yrs.push(i);
+    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return 'Anno '+i;}),datasets:[{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre,i)*C.mult);}),borderColor:'rgba(46,109,180,.8)',borderWidth:2.5,pointRadius:0,tension:.4,label:'EV Base'},{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre*1.4,i)*C.mult*1.2);}),borderColor:'rgba(26,95,80,.7)',borderWidth:2,pointRadius:0,tension:.4,label:'EV Ott.'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
   }
 }
 
@@ -616,18 +527,19 @@ function buildAzCharts(pid){
 // EXCEL & WHATSAPP
 // ═══════════════════════════════════════
 function generateExcel(){
-  var wb=XLSX.utils.book_new(),C=window._calc||{},sum=[['REPORT','',''],[D.q_nome||D.q_nome_az||'Cliente','Data:',D.data||'']];
+  var wb=XLSX.utils.book_new();
+  var sum=[['REPORT','',''],[D.q_nome||D.q_nome_az||'Cliente','Data:',D.data||'']];
   var ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
   var name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');
   XLSX.writeFile(wb,'analisi_'+name+'_'+(D.data||'report').replace(/\//g,'-')+'.xlsx');
-  toast('\u2b07\ufe0f Excel scaricato');
+  toast('⬇️ Excel scaricato');
 }
 function sendWA(){
   var C=window._calc||{},txt=tipo==='famiglie'?
-    '\ud83d\udcca *Analisi Familiare \u2013 '+(D.q_nome||'Cliente')+'*\n\uD83D\uDC64 '+C.eta+' anni\n\uD83D\uDCB0 Reddito: '+fmt(C.red||0)+'/mese\n\uD83C\uDFE6 Patrimonio: '+fmtK(C.patNetto||0)+'\n\u26A0\ufe0f Gap: '+fmtK(C.gapM||0):
-    '\ud83c\udfe2 *Analisi Aziendale \u2013 '+(D.q_nome_az||'Azienda')+'*\n\uD83D\uDCC8 Ricavi: '+fmtK(C.ric||0)+'\n\uD83D\uDCB0 EBITDA: '+fmtK(C.ebitda||0)+'\n\uD83C\uDFF0 EV: '+fmtK(C.ev||0);
+    '📊 Analisi Familiare – '+(D.q_nome||'Cliente')+'\n💰 Reddito: '+fmt(C.red||0)+'/mese\n🏦 Patrimonio: '+fmtK(C.patNetto||0)+'\n⚠️ Gap: '+fmtK(C.gapM||0):
+    '🏢 Analisi Aziendale – '+(D.q_nome_az||'Azienda')+'\n💰 Ricavi: '+fmtK(C.ric||0)+'\n📈 EBITDA: '+fmtK(C.ebitda||0)+'\n💎 EV: '+fmtK(C.ev||0);
   window.open('https://wa.me/?text='+encodeURIComponent(txt));
-  toast('\ud83d\udcf1 WhatsApp aperto');
+  toast('📱 WhatsApp aperto');
 }
 
 // ═══════════════════════════════════════
