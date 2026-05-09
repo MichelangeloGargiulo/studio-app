@@ -374,25 +374,39 @@ function populateAz(){
 function buildRawTable(){var skip=['tipo','data','ora','figli','soci'];var rows=[];Object.keys(D).forEach(function(k){if(skip.indexOf(k)<0&&D[k])rows.push([k,D[k]]);});document.getElementById('rawTable').innerHTML='<thead><tr><th>Campo</th><th>Valore</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>';}).join('')+'</tbody>';}
 
 // CHARTS
-function buildChartsForPanel(pid){if(tipo==='famiglie')buildFamCharts(pid);else buildAzCharts(pid);}
+function buildChartsForPanel(pid){
+  if(!window._calc) return;
+  if(tipo==='famiglie') buildFamCharts(pid);
+  else buildAzCharts(pid);
+}
 function buildFamCharts(pid){
-  var C=window._calc||{};if(!C.eta)return;
+  var C=window._calc; if(!C.eta) return;
   if(pid==='overview'){
-    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var yrs=[],i,N=C.aLav+C.aPens,w=C.patNetto,pos=[];for(i=0;i<N;i++){if(i<=C.aLav)w=w*(1+C.rend)+C.rispNA;else w=Math.max(0,w*(1+C.rend)-C.gapPensM*12);pos.push(Math.round(w));}
-    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:pos.map(function(_,i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
+    var mc=document.getElementById('mainCurve'); if(!mc) return;
+    if(window.mainChart) window.mainChart.destroy();
+    var N=C.aLav+C.aPens, w=C.patNetto, pos=[];
+    for(var i=0;i<N;i++){
+      if(i<=C.aLav) w=w*(1+C.rend)+C.rispNA;
+      else w=Math.max(0,w*(1+C.rend)-C.gapPensM*12);
+      pos.push(Math.round(w));
+    }
+    window.mainChart=new Chart(mc,{type:'line',data:{labels:pos.map(function(_,i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});
   }
 }
 function buildAzCharts(pid){
-  var C=window._calc||{};if(!C.ric)return;
+  var C=window._calc; if(!C.ric) return;
   if(pid==='overview'){
-    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var yrs=[],i;for(i=0;i<=C.oriz;i++)yrs.push(i);
-    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return 'Anno '+i;}),datasets:[{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre,i)*C.mult);}),borderColor:'rgba(46,109,180,.8)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
+    var mc=document.getElementById('mainCurve'); if(!mc) return;
+    if(window.mainChart) window.mainChart.destroy();
+    var yrs=[];
+    for(var i=0;i<=C.oriz;i++) yrs.push(i);
+    window.mainChart=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return 'Anno '+i;}),datasets:[{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre,i)*C.mult);}),borderColor:'rgba(46,109,180,.8)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});
   }
 }
 
 // EXCEL & WA
-function generateExcel(){var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([['Report',''],[D.q_nome||D.q_nome_az||'Cliente','Data: '+D.data]]);ws['!cols']=[{wch:30},{wch:18}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');var name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');XLSX.writeFile(wb,'analisi_'+name+'.xlsx');toast('⬇️ Excel scaricato');}
-function sendWA(){var C=window._calc||{},txt=tipo==='famiglie'?'📊 Analisi Familiare – '+D.q_nome+'\n💰 Reddito: '+fmt(C.red||0)+'/mese\n🏦 Patrimonio: '+fmtK(C.patNetto||0):'🏢 Analisi Aziendale – '+D.q_nome_az+'\n💰 Ricavi: '+fmtK(C.ric||0)+'\n📈 EBITDA: '+fmtK(C.ebitda||0);window.open('https://wa.me/?text='+encodeURIComponent(txt));toast('📱 WhatsApp aperto');}
+function generateExcel(){if(typeof XLSX==='undefined'){toast('Excel non disponibile','err');return;}var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([['Report',''],[D.q_nome||D.q_nome_az||'Cliente','Data: '+D.data]]);ws['!cols']=[{wch:30},{wch:18}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');var name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');XLSX.writeFile(wb,'analisi_'+name+'.xlsx');toast('Excel scaricato');}
+function sendWA(){var txt=tipo==='famiglie'?'📊 Analisi Familiare – '+D.q_nome+'\n🏦 Patrimonio: '+fmtK((window._calc||{}).patNetto||0):'🏢 Analisi Aziendale – '+D.q_nome_az+'\n💰 Ricavi: '+fmtK((window._calc||{}).ric||0);window.open('https://wa.me/?text='+encodeURIComponent(txt));toast('WhatsApp aperto');}
 function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type==='err'?' err':'');t.classList.add('show');clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove('show');},2500);}
 </script>
 </body>
