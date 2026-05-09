@@ -390,6 +390,7 @@ function buildFamCharts(pid){
       else w=Math.max(0,w*(1+C.rend)-C.gapPensM*12);
       pos.push(Math.round(w));
     }
+  }  
     window.mainChart=new Chart(mc,{type:'line',data:{labels:pos.map(function(_,i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});
   }
 }
