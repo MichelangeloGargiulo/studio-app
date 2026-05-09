@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio – App Ufficio</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0F0D0A;--paper:#F7F3EC;--cream:#FBF8F2;
+  --gold:#B8860B;--gold-lt:#E8D080;--gold-bg:#FEF9E7;
+  --navy:#1A2E4A;--blue:#2E6DB4;--blue-lt:#D6EAF8;
+  --teal:#1A5F50;--teal-lt:#D1F2EB;
+  --rose:#8B2020;--rose-lt:#FADBD8;
+  --amber:#8A4010;--amber-lt:#FEF0E0;
+  --sage:#1D4731;--sage-lt:#D5F5E3;
+  --grey:#6B6B6B;--border:#DDD8CC;--mgrey:#ECE8E0;
+  --serif:'Lora',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+  --sidebar:260px;
+}
+html,body{height:100%;margin:0}
+body{background:var(--paper);font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden}
+
+/* PASSWORD OVERLAY */
+.pw-overlay{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;background-image:radial-gradient(ellipse at 30% 50%,rgba(184,134,11,.08),transparent 55%)}
+.pw-card{background:#1C1814;border:1px solid rgba(184,134,11,.2);border-radius:16px;padding:28px 22px;max-width:400px;width:100%;text-align:center}
+.pw-icon{font-size:48px;margin-bottom:8px}
+.pw-title{font-family:var(--serif);font-size:20px;color:#fff;font-weight:400;margin-bottom:4px;font-style:italic}
+.pw-sub{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.5}
+.pw-input{width:100%;padding:14px;border:1px solid rgba(184,134,11,.4);border-radius:11px;background:#0F0D0A;color:#fff;font-family:var(--sans);font-size:16px;text-align:center;outline:none;letter-spacing:6px;font-weight:700;transition:border-color .2s}
+.pw-input:focus{border-color:var(--gold)}
+.pw-input::placeholder{color:rgba(255,255,255,.15);letter-spacing:2px;font-weight:300;font-size:14px}
+.pw-error{font-size:11px;color:var(--rose);margin-top:6px;display:none}
+.pw-btn{width:100%;padding:14px;border:none;border-radius:11px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;background:linear-gradient(135deg,var(--gold),#8B6914);color:#fff;box-shadow:0 4px 20px rgba(184,134,11,.3);transition:all .2s}
+.pw-btn:active{transform:scale(.97)}
+.pw-hint{font-size:10px;color:rgba(255,255,255,.3);margin-top:8px}
+
+/* LANGUAGE BAR */
+.lang-bar{display:flex;justify-content:flex-end;padding:4px 20px;gap:4px;flex-shrink:0;background:var(--ink);border-bottom:1px solid #1a1a1a}
+.lang-btn{padding:4px 10px;border-radius:5px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.35);font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px;text-transform:uppercase}
+.lang-btn.active{background:rgba(184,134,11,.15);color:var(--gold-lt);border-color:rgba(184,134,11,.25)}
+
+/* IMPORT SCREEN */
+#importScreen{position:fixed;inset:0;background:var(--ink);z-index:9000;display:flex;align-items:center;justify-content:center;padding:32px;background-image:radial-gradient(ellipse at 25% 60%,rgba(184,134,11,.08),transparent 55%)}
+.imp-inner{max-width:600px;width:100%}
+.imp-logo{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.imp-title{font-family:var(--serif);font-size:clamp(28px,5vw,48px);color:#fff;font-weight:400;font-style:italic;line-height:1.2;margin-bottom:8px}
+.imp-sub{font-size:13px;color:#666;margin-bottom:32px;line-height:1.7}
+.type-row{display:flex;gap:12px;margin-bottom:20px}
+.type-card{flex:1;padding:16px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s;text-align:center}
+.type-card:hover{border-color:var(--gold);background:rgba(184,134,11,.08)}
+.type-card.sel{border-color:var(--gold);background:rgba(184,134,11,.12)}
+.tc-icon{font-size:28px;margin-bottom:6px}
+.tc-label{font-size:12px;font-weight:700;color:#fff;letter-spacing:.5px}
+.tc-sub{font-size:10px;color:#666;margin-top:3px}
+.imp-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:22px;margin-bottom:16px}
+.ib-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:8px}
+textarea#codeIn{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#aaa;padding:12px 14px;font-family:monospace;font-size:11px;resize:none;min-height:72px;outline:none;transition:border-color .2s;line-height:1.6}
+textarea#codeIn:focus{border-color:var(--gold)}
+.ib-or{text-align:center;color:#333;font-size:11px;margin:12px 0;position:relative}
+.ib-or::before,.ib-or::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:#222}
+.ib-or::before{left:0}.ib-or::after{right:0}
+.file-label{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border:1px dashed rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:12px;color:#555;transition:all .2s}
+.file-label:hover{border-color:var(--gold);color:var(--gold)}
+input[type=file]{display:none}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+.i-btn{flex:1;padding:14px;border:none;border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.i-btn:hover{transform:translateY(-1px)}
+.i-demo{background:rgba(255,255,255,.07);color:#aaa;border:1px solid rgba(255,255,255,.1)}
+.i-go{background:linear-gradient(135deg,var(--gold),#D4A017);color:var(--ink)}
+.i-load{background:rgba(255,255,255,.06);color:#888;border:1px solid rgba(255,255,255,.08)}
+
+/* APP */
+#app{display:none;height:100%;flex-direction:column}
+.topbar{height:52px;background:var(--ink);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;border-bottom:1px solid #1a1a1a;z-index:100}
+.tb-logo{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);flex-shrink:0}
+.tb-client{font-family:var(--serif);font-size:16px;color:#fff;font-style:italic;flex:1;margin-left:16px}
+.tb-type{font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:4px;font-weight:700;flex-shrink:0}
+.tbt-fam{background:rgba(26,95,80,.3);color:#80C89A;border:1px solid rgba(128,200,154,.2)}
+.tbt-az{background:rgba(233,69,96,.2);color:#E88080;border:1px solid rgba(232,128,128,.2)}
+.tb-btns{display:flex;gap:8px;margin-left:auto}
+.tb-btn{padding:7px 14px;border:none;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px;white-space:nowrap}
+.tb-btn:hover{transform:translateY(-1px)}
+.tb-new{background:rgba(255,255,255,.1);color:#aaa;border:1px solid rgba(255,255,255,.1)}
+.tb-xlsx{background:linear-gradient(135deg,#1D6F42,#2E8B57);color:#fff;box-shadow:0 2px 12px rgba(29,111,66,.3)}
+.tb-print{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
+.tb-wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff}
+.app-body{flex:1;display:flex;overflow:hidden}
+.sidebar{width:var(--sidebar);background:var(--cream);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:16px 0}
+.sb-section{margin-bottom:4px}
+.sb-head{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);padding:8px 16px 4px;font-weight:700}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;font-size:13px;font-weight:500;color:var(--ink)}
+.sb-item:hover{background:var(--mgrey)}
+.sb-item.active{background:var(--gold-bg);border-left-color:var(--gold);color:var(--amber)}
+.sb-icon{font-size:16px;flex-shrink:0}
+.main{flex:1;overflow-y:auto;padding:24px 28px;background:var(--paper)}
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--ink);margin-bottom:4px;line-height:1.2}
+.panel-title em{font-style:italic;color:var(--gold)}
+.panel-sub{font-size:13px;color:var(--grey);margin-bottom:24px;line-height:1.7}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-r::before{background:var(--rose)}.kpi-g::before{background:var(--teal)}
+.kpi-b::before{background:var(--blue)}.kpi-a::before{background:var(--gold)}
+.kpi-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:8px}
+.kpi-value{font-family:var(--serif);font-size:clamp(20px,3vw,30px);font-weight:400;line-height:1;margin-bottom:4px}
+.kv-r{color:var(--rose)}.kv-g{color:var(--teal)}.kv-b{color:var(--blue)}.kv-a{color:var(--gold)}
+.kpi-note{font-size:11px;color:var(--grey);line-height:1.5}
+.chart-row{display:grid;gap:16px;margin-bottom:20px}
+.chart-row.cols2{grid-template-columns:1fr 1fr}
+.chart-row.cols1{grid-template-columns:1fr}
+.chart-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px}
+.cb-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:12px}
+.chart-wrap{position:relative;height:240px}
+.risk-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px}
+.risk-table th{padding:10px 14px;text-align:left;background:var(--navy);color:#fff;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.risk-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.risk-table tr:nth-child(even) td{background:var(--cream)}
+.risk-table tr:hover td{background:var(--mgrey)}
+.risk-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px}
+.rp-r{background:var(--rose-lt);color:var(--rose)}
+.rp-g{background:var(--sage-lt);color:var(--sage)}
+.rp-a{background:var(--amber-lt);color:var(--amber)}
+.alert{border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.al-r{background:var(--rose-lt);border:1px solid rgba(139,32,32,.2)}
+.al-g{background:var(--sage-lt);border:1px solid rgba(29,71,49,.2)}
+.al-a{background:var(--amber-lt);border:1px solid rgba(138,64,16,.2)}
+.al-b{background:var(--blue-lt);border:1px solid rgba(46,109,180,.2)}
+.ah{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ai{font-size:16px}.at{font-size:12px;font-weight:700}
+.at-r{color:var(--rose)}.at-g{color:var(--sage)}.at-a{color:var(--amber)}.at-b{color:var(--blue)}
+.ab-txt{font-size:12px;line-height:1.8;color:#4a4a4a}
+.ab-txt strong{font-weight:600;color:var(--ink)}
+.people-grid{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.person-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;min-width:160px;position:relative;overflow:hidden;flex:1}
+.pc-top{height:3px;position:absolute;top:0;left:0;right:0}
+.pc-role{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:3px}
+.pc-name{font-family:var(--serif);font-size:18px;color:var(--ink);margin-bottom:2px}
+.pc-detail{font-size:11px;color:var(--grey)}
+.pc-dream{font-size:11px;color:var(--amber);margin-top:8px;font-style:italic;border-top:1px solid var(--border);padding-top:8px;line-height:1.5}
+.action-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.action{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#fff;border:1px solid var(--border);border-radius:12px}
+.a-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.a-body h4{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.a-body p{font-size:12px;color:var(--grey);line-height:1.7}
+.a-body .a-cost{font-family:var(--serif);font-size:13px;color:var(--gold);margin-top:4px;font-style:italic}
+.a-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-top:5px;font-weight:700}
+.at-now{color:var(--rose)}.at-soon{color:var(--amber)}.at-plan{color:var(--teal)}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0 16px;color:var(--grey)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.div-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.data-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.data-table th{padding:8px 12px;background:var(--navy);color:#fff;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--ink)}
+.data-table tr:nth-child(even) td{background:var(--cream)}
+.data-table .num{text-align:right;font-weight:600;font-family:var(--serif)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast.show{opacity:1}
+.toast.err{background:var(--rose)}
+
+/* PRINT */
+@media print{
+  body{background:#fff;font-size:11px}
+  .sidebar{display:none}.tb-btns{display:none}
+  .main{padding:16px}.panel{display:block!important}
+  .panel-title{font-size:20px}.chart-wrap{height:180px}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}.chart-row.cols2{grid-template-columns:1fr 1fr}
+  .kpi,.chart-box,.action,.person-card{border:1px solid #ddd!important;background:#fff!important}
+}
+
+@media(max-width:900px){
+  .sidebar{width:200px;font-size:12px}
+  .chart-row.cols2{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .main{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-overlay" id="pwGate">
+  <div class="pw-card">
+    <div class="pw-icon">🔐</div>
+    <div class="pw-title" data-lang="pw_title">Accesso Studio</div>
+    <div class="pw-sub" data-lang="pw_sub">Inserisci il codice di accesso dello studio professionale</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="••••••" maxlength="12" autocomplete="off">
+    <div class="pw-error" id="pwError" data-lang="pw_error">Codice non valido. Riprova.</div>
+    <button class="pw-btn" onclick="checkPassword()" data-lang="pw_btn">Accedi</button>
+    <div class="pw-hint" data-lang="pw_hint">Codice predefinito: <strong>1234</strong></div>
+  </div>
+</div>
+
+<!-- LANGUAGE BAR -->
+<div class="lang-bar" id="langBar" style="display:none">
+  <button class="lang-btn active" onclick="setLang('it')">🇮🇹 IT</button>
+  <button class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+</div>
+
+<!-- IMPORT SCREEN -->
+<div id="importScreen" style="display:none">
+  <div class="imp-inner">
+    <div class="imp-logo">Studio · App Ufficio</div>
+    <h1 class="imp-title" data-lang="imp_title">Elabora il<br>report dal cliente</h1>
+    <p class="imp-sub" data-lang="imp_sub">Importa i dati raccolti con l'app mobile · Il sistema genera automaticamente analisi, grafici e piano d'azione</p>
+    <div class="type-row">
+      <div class="type-card sel" id="tc-fam" onclick="setType('famiglie')"><div class="tc-icon">🏠</div><div class="tc-label">Famiglie</div><div class="tc-sub">Curva Modigliani</div></div>
+      <div class="type-card" id="tc-az" onclick="setType('azienda')"><div class="tc-icon">🏢</div><div class="tc-label">Aziende</div><div class="tc-sub">Ciclo Damodaran</div></div>
+    </div>
+    <div class="imp-box">
+      <span class="ib-label">Incolla il codice dall'app mobile</span>
+      <textarea id="codeIn" placeholder="Incolla qui il codice copiato dall'app telefono…"></textarea>
+      <div class="ib-or">oppure</div>
+      <label class="file-label" for="fileIn">📂 Carica file .json</label>
+      <input type="file" id="fileIn" accept=".json" onchange="loadFile(event)">
+      <div class="btn-row">
+        <button class="i-btn i-demo" onclick="loadDemo()">▶ Demo</button>
+        <button class="i-btn i-go" onclick="importData()">Genera report →</button>
+      </div>
+      <button class="i-btn i-load" style="margin-top:8px" onclick="loadLast()">📂 Carica ultimo report</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="tb-logo">Studio</div>
+    <div id="tbType" class="tb-type tbt-fam">FAMIGLIE</div>
+    <div class="tb-client" id="tbClient">Cliente</div>
+    <div class="tb-btns">
+      <button class="tb-btn tb-new" onclick="newReport()">↺ Nuovo</button>
+      <button class="tb-btn tb-xlsx" onclick="generateExcel()">⬇ Excel</button>
+      <button class="tb-btn tb-print" onclick="window.print()">🖨 Stampa</button>
+      <button class="tb-btn tb-wa" onclick="sendWA()">📱 WA</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main" id="mainArea">
+
+      <div class="panel active" id="p-overview">
+        <div class="panel-title">Panoramica <em id="ov-name">cliente</em></div>
+        <p class="panel-sub" id="ov-sub"></p>
+        <div class="kpi-grid" id="ov-kpis"></div>
+        <div class="people-grid" id="ov-people"></div>
+        <div class="chart-row cols2">
+          <div class="chart-box"><div class="cb-title" id="curve-title">Curva di Modigliani</div><div class="chart-wrap"><canvas id="mainCurve"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title">Struttura spese mensili</div><div class="chart-wrap"><canvas id="costDonut"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-rischi">
+        <div class="panel-title">Analisi dei <em>rischi</em></div>
+        <p class="panel-sub" id="risk-sub"></p>
+        <div class="chart-row cols2">
+          <div class="chart-box"><div class="cb-title">Mappa rischi – Radar</div><div class="chart-wrap"><canvas id="riskRadar"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title">Gap copertura vs fabbisogno</div><div class="chart-wrap"><canvas id="gapBar"></canvas></div></div>
+        </div>
+        <table class="risk-table" id="riskTable"></table>
+      </div>
+
+      <div class="panel" id="p-scenari">
+        <div class="panel-title">Scenari <em>futuri</em></div>
+        <p class="panel-sub" id="sc-sub"></p>
+        <div class="chart-row cols1"><div class="chart-box"><div class="cb-title" id="sc-chart-title">Proiezioni</div><div class="chart-wrap" style="height:300px"><canvas id="scenChart"></canvas></div></div></div>
+        <div class="kpi-grid" id="sc-kpis"></div>
+      </div>
+
+      <div class="panel" id="p-persone">
+        <div class="panel-title">Le <em>persone</em></div>
+        <p class="panel-sub" id="per-sub"></p>
+        <div class="people-grid" id="per-people"></div>
+        <div id="per-extra"></div>
+      </div>
+
+      <div class="panel" id="p-patrimonio">
+        <div class="panel-title">Il <em>patrimonio</em></div>
+        <p class="panel-sub" id="pat-sub"></p>
+        <div class="kpi-grid" id="pat-kpis"></div>
+        <div class="chart-row cols2">
+          <div class="chart-box"><div class="cb-title">Composizione</div><div class="chart-wrap"><canvas id="patPie"></canvas></div></div>
+          <div class="chart-box"><div class="cb-title" id="pat-chart2-title">Evoluzione</div><div class="chart-wrap"><canvas id="patLine"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-piano">
+        <div class="panel-title">Piano <em>d'azione</em></div>
+        <p class="panel-sub" id="plan-sub"></p>
+        <div class="action-list" id="actionList"></div>
+        <div class="alert al-b"><div class="ah"><span class="ai">📅</span><span class="at at-b">PROSSIMO PASSO</span></div><div class="ab-txt" id="nextStep"></div></div>
+      </div>
+
+      <div class="panel" id="p-dati">
+        <div class="panel-title">Dati <em>raccolti</em></div>
+        <p class="panel-sub">Tutti i dati importati dall'app mobile — verificabili e stampabili.</p>
+        <table class="data-table" id="rawTable"></table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const CONFIG={password:'1234'};
+const LANG={
+it:{pw_title:'Accesso Studio',pw_sub:'Inserisci il codice di accesso dello studio professionale',pw_error:'Codice non valido. Riprova.',pw_btn:'Accedi',pw_hint:'Codice predefinito: <strong>1234</strong>',imp_title:'Elabora il<br>report dal cliente',imp_sub:'Importa i dati raccolti con l\'app mobile · Il sistema genera automaticamente analisi, grafici e piano d\'azione'},
+en:{pw_title:'Studio Access',pw_sub:'Enter the access code provided by your firm',pw_error:'Invalid code. Try again.',pw_btn:'Login',pw_hint:'Default code: <strong>1234</strong>',imp_title:'Process the<br>client report',imp_sub:'Import data collected from the mobile app · The system automatically generates analysis, charts and action plan'}
+};
+let currentLang='it',D={},tipo='famiglie',unlocked=false;
+const CH={},selectedType='famiglie';
+
+// ═══════════════════════════════════════
+// PASSWORD
+// ═══════════════════════════════════════
+function checkPassword(){
+  if(document.getElementById('pwInput').value.trim()===CONFIG.password){
+    unlocked=true;document.getElementById('pwGate').style.display='none';
+    document.getElementById('langBar').style.display='flex';
+    document.getElementById('importScreen').style.display='flex';
+    document.getElementById('pwInput').value='';
+    const saved=localStorage.getItem('studio_last');
+    if(saved){try{const sd=JSON.parse(saved);if(sd.tipo){D=sd;tipo=D.tipo;start();return;}}catch(e){}}
+  }else{document.getElementById('pwError').style.display='block';}
+}
+document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPassword();});
+
+// ═══════════════════════════════════════
+// LINGUA
+// ═══════════════════════════════════════
+function setLang(l){
+  currentLang=l;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent.includes(l.toUpperCase())));
+  document.querySelectorAll('[data-lang]').forEach(el=>{const k=el.dataset.lang;if(LANG[l]&&LANG[l][k])el.innerHTML=LANG[l][k];});
+  localStorage.setItem('studio_lang',l);
+}
+(function(){const sl=localStorage.getItem('studio_lang');if(sl)currentLang=sl;setLang(currentLang);document.getElementById('pwInput').focus();})();
+
+// ═══════════════════════════════════════
+// IMPORT
+// ═══════════════════════════════════════
+function setType(t){selectedType=t;document.getElementById('tc-fam').classList.toggle('sel',t==='famiglie');document.getElementById('tc-az').classList.toggle('sel',t==='azienda');}
+function loadFile(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{D=JSON.parse(e.target.result);start();}catch{toast('File non valido','err');}};r.readAsText(f);}
+function importData(){const raw=document.getElementById('codeIn').value.trim();if(!raw){toast('Incolla un codice o carica un file','err');return;}try{D=raw.startsWith('{')?JSON.parse(raw):JSON.parse(decodeURIComponent(escape(atob(raw))));start();}catch(e){toast('Codice non valido. Prova Demo.','err');}}
+function loadLast(){const saved=localStorage.getItem('studio_last');if(saved){try{D=JSON.parse(saved);tipo=D.tipo;start();}catch(e){toast('Nessun report salvato','err');}}else{toast('Nessun report salvato','err');}}
+function loadDemo(){tipo=selectedType;tipo==='azienda'?loadDemoAz():loadDemoFam();start();}
+function loadDemoFam(){D={tipo:'famiglie',data:new Date().toLocaleDateString('it-IT'),q_nome:'Marco Bianchi',q_eta:'42',q_coppia:'Sì',q_partner_nome:'Maria',q_partner_eta:'39',figli:'[{"nome":"Lorenzo","eta":"9"},{"nome":"Sofia","eta":"6"}]',q_reddito:'3200',q_reddito_partner:'1000',q_casa:'Proprietà (con mutuo)',q_immobile:'230000',q_risparmi:'52000',q_debiti:'95000',q_rata:'680',q_anni_deb:'16',q_pensione:'1350',q_obiettivo:'280000',q_aspett:'85',q_sp_casa:'900',q_sp_quotidiano:'950',q_sp_figli:'380',q_sp_salute:'130',q_sp_svago:'260',q_categ:'Dipendente privato',q_unione:'Matrimonio civile',q_partner_lavora:'Sì, part-time',q_scuola:'Università fuori sede',q_genitori:'Solo madre',q_gen_aiuto_si:'Sì',q_gen_aiuto:'250',q_animali:'1 cane',q_animali_costo:'90',q_auto:'2',q_moto:'1',q_bici:'2',q_vacanze:'Europa',q_vacanze_spesa:'5000',q_stabilita:'Abbastanza stabile',q_eta_pens:'67',q_altri_imm:'No',q_risp_tipo:'Mix diversificato',q_eredita:'Forse',q_eredita_val:'120000',q_eredita_tipo:'Immobili',q_testamento:'No, ma ci penso',q_fondo:'No',q_rischio:'Prudente',dream_partner:'Che Maria non debba ricominciare a lavorare da sola dopo i 60',dream_figli:'Che Lorenzo e Sofia possano studiare quello che vogliono',dream_se:'Restare autonomo',q_note:'Mutuo sulla prima casa. Vorrei capire se siamo coperti.'};}
+function loadDemoAz(){D={tipo:'azienda',data:new Date().toLocaleDateString('it-IT'),q_nome_az:'Rossi Costruzioni Srl',q_settore:'Costruzioni / Real Estate',q_ricavi:'1250000',q_costi_op:'980000',q_amm:'45000',q_oneri_fin:'28000',q_pn:'520000',q_debito_fin:'380000',q_cassa:'120000',q_capex:'75000',q_crescita:'0.03',q_multiplo:'6.5',q_orizzonte:'7',q_val_obiettivo:'3000000',q_titolare:'Giovanni Rossi',q_titolare_eta:'48',q_keyman:'No',q_inv_az:'No, dipende da me',q_fideiuss:'Sì, sulla casa',q_successione:'No, ma ci penso',q_obiettivo_az:'Passaggio generazionale',q_timing:'6-10 anni',q_dipend_fam:'Completamente',q_reddito_fam:'6800',q_spese_fam:'4200',q_patr_pers:'280000',q_key_person:'Solo io',q_eredi_az:'Sì, in futuro',q_prev_az:'Solo INPS / cassa',q_sogno_fam:'Che la casa sia salva. Sempre.',q_paura:'Ammalarmi senza un piano. Lasciare debiti a mia moglie.'};}
+
+// ═══════════════════════════════════════
+// START
+// ═══════════════════════════════════════
+function start(){
+  tipo=D.tipo||selectedType;
+  document.getElementById('importScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  buildSidebar();buildTopbar();populate();
+  setTimeout(()=>buildChartsForPanel('overview'),300);
+  try{localStorage.setItem('studio_last',JSON.stringify(D));}catch(e){}
+  toast('✅ Report generato');
+}
+
+function newReport(){
+  D={};tipo=selectedType;
+  Object.keys(CH).forEach(k=>{if(CH[k])CH[k].destroy();delete CH[k];});
+  document.getElementById('app').style.display='none';
+  document.getElementById('importScreen').style.display='flex';
+  document.getElementById('codeIn').value='';
+  document.getElementById('fileIn').value='';
+}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+const n=(k,d=0)=>parseFloat(D[k])||d;
+const fmt=v=>'€ '+Math.round(v).toLocaleString('it-IT');
+const fmtK=v=>v>=1e6?'€ '+(v/1e6).toFixed(2)+' Mln':v>=1000?'€ '+Math.round(v/1000)+'K':fmt(v);
+const figli=()=>{try{return JSON.parse(D.figli||'[]');}catch{return[];}};
+const soci=()=>{try{return JSON.parse(D.soci||'[]');}catch{return[];}};
+
+// ═══════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════
+const FAM_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👨‍👩‍👧',label:'Le persone'},{id:'patrimonio',icon:'🏦',label:'Patrimonio'},{id:'rischi',icon:'⚠️',label:'Analisi rischi'},{id:'scenari',icon:'📈',label:'Scenari futuri'},{id:'piano',icon:'🎯',label:'Piano d\'azione'},{id:'dati',icon:'📋',label:'Dati raccolti'}];
+const AZ_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👤',label:'Persone & struttura'},{id:'patrimonio',icon:'🏦',label:'Finanza aziendale'},{id:'rischi',icon:'⚠️',label:'Analisi rischi'},{id:'scenari',icon:'📈',label:'Scenari futuri'},{id:'piano',icon:'🎯',label:'Piano d\'azione'},{id:'dati',icon:'📋',label:'Dati raccolti'}];
+function buildSidebar(){
+  const menu=tipo==='azienda'?AZ_MENU:FAM_MENU;
+  document.getElementById('sidebar').innerHTML=`<div class="sb-section"><div class="sb-head">Analisi del ${D.data||new Date().toLocaleDateString('it-IT')}</div>`+
+    menu.map(m=>`<div class="sb-item${m.id==='overview'?' active':''}" onclick="showPanel('${m.id}')"><span class="sb-icon">${m.icon}</span>${m.label}</div>`).join('')+'</div>';
+}
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('p-'+id)?.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i=>{if(i.onclick?.toString().includes(`'${id}'`))i.classList.add('active');});
+  setTimeout(()=>buildChartsForPanel(id),150);
+}
+
+// ═══════════════════════════════════════
+// TOPBAR
+// ═══════════════════════════════════════
+function buildTopbar(){
+  document.getElementById('tbClient').textContent=tipo==='azienda'?(D.q_nome_az||'Azienda'):(D.q_nome||'Cliente');
+  const te=document.getElementById('tbType');te.textContent=tipo==='azienda'?'AZIENDA':'FAMIGLIE';te.className='tb-type '+(tipo==='azienda'?'tbt-az':'tbt-fam');
+}
+
+// ═══════════════════════════════════════
+// POPULATE
+// ═══════════════════════════════════════
+function populate(){tipo==='azienda'?populateAz():populateFam();buildRawTable();}
+function kpis(items){return items.map(i=>`<div class="kpi ${i.t||''}"><div class="kpi-label">${i.l}</div><div class="kpi-value ${i.cls||''}">${i.v}</div></div>`).join('');}
+function pplHTML(items){const colors=['#B8860B','#8B2020','#1D4731','#8A4010','#2E6DB4','#1A5F50'];return items.map((p,i)=>`<div class="person-card" style="flex:1;min-width:150px"><div class="pc-top" style="background:${p.col||colors[i%6]}"></div><div class="pc-role">${p.role}</div><div class="pc-name">${p.name}</div><div class="pc-detail">${p.detail}</div>${p.dream?`<div class="pc-dream">"${p.dream}"</div>`:''}</div>`).join('');}
+
+function populateFam(){
+  const fs=figli(),eta=n('q_eta',40),etaP=n('q_eta_pens',67),asp=n('q_aspett',85);
+  const red=n('q_reddito',2800),redP=n('q_reddito_partner',0);
+  const spC=n('q_sp_casa',700),spQ=n('q_sp_quotidiano',800),spF=n('q_sp_figli',300),spS=n('q_sp_salute',100),spSv=n('q_sp_svago',200);
+  const spTot=spC+spQ+spF+spS+spSv;
+  const ris=n('q_risparmi',40000),imm=n('q_immobile',200000),deb=n('q_debiti',80000),rat=n('q_rata',600),aDeb=n('q_anni_deb',12);
+  const pen=n('q_pensione',1300),genAiuto=n('q_gen_aiuto',0);
+  const rend=0.03,inf=0.02,aLav=Math.max(1,etaP-eta),aPens=Math.max(1,asp-etaP);
+  const rispNM=red+redP-spTot-rat-genAiuto,rispNA=rispNM*12,patNetto=ris+imm-deb;
+  const patPens=Math.max(0,ris*Math.pow(1+rend,aLav)+rispNA*((Math.pow(1+rend,aLav)-1)/rend));
+  const inpsRev=Math.max(400,pen*.6),spePens=spTot*.85*Math.pow(1+inf,aLav);
+  const gapPensM=Math.max(0,spePens-pen);
+  const youngest=fs.length>0?Math.min(...fs.map(f=>parseInt(f.eta)||10)):0;
+  const aCovM=youngest>0?Math.max(15,25-youngest)+(asp-n('q_partner_eta',38)):asp-eta;
+  const fabM=(spTot-inpsRev)*12*aCovM,covM=ris+Math.min(imm*.4,80000);
+  const gapM=Math.max(0,fabM-covM),gapTot=Math.max(0,spTot-700);
+  const aCovP=gapPensM>0?Math.min(aPens,patPens/(Math.max(1,gapPensM)*12)):aPens,etaEsaur=etaP+aCovP;
+  window._calc={eta,etaP,asp,red,redP,spTot,spC,spQ,spF,spS,spSv,ris,imm,deb,rat,aDeb,pen,rend,inf,aLav,aPens,rispNM,rispNA,patNetto,patPens,inpsRev,spePens,gapPensM,fabM,covM,gapM,gapTot,aCovP,etaEsaur,fs};
+
+  document.getElementById('ov-name').textContent=D.q_nome||'cliente';
+  document.getElementById('ov-sub').textContent=`${D.q_categ||''} · ${eta} anni · ${aLav} anni al pensionamento`;
+  document.getElementById('curve-title').textContent='Curva di Modigliani – Patrimonio nel tempo';
+  document.getElementById('ov-kpis').innerHTML=kpis([
+    {l:'Risparmio netto/mese',v:fmt(rispNM),cls:rispNM>=0?'kv-g':'kv-r',t:rispNM>=0?'kpi-g':'kpi-r'},
+    {l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},
+    {l:'Patrimonio a pensione',v:fmtK(patPens),cls:'kv-a',t:'kpi-a'},
+    {l:'Gap vs obiettivo',v:fmtK(Math.abs(n('q_obiettivo',200000)-patPens)),cls:patPens>=n('q_obiettivo',200000)?'kv-g':'kv-r',t:patPens>=n('q_obiettivo',200000)?'kpi-g':'kpi-r'},
+  ]);
+  const ppl=[{role:'Tu',name:D.q_nome?.split(' ')[0]||'Cliente',detail:`${eta} anni · ${D.q_categ||''}`,dream:D.dream_se,col:'#B8860B'}];
+  if(D.q_partner_nome)ppl.push({role:'Partner',name:D.q_partner_nome,detail:`${D.q_partner_eta} anni`,dream:D.dream_partner,col:'#8B2020'});
+  fs.forEach(f=>ppl.push({role:'Figlio/a',name:f.nome,detail:`${f.eta} anni`,dream:D.dream_figli,col:'#1D4731'}));
+  document.getElementById('ov-people').innerHTML=pplHTML(ppl);
+  document.getElementById('per-people').innerHTML=pplHTML(ppl);
+  document.getElementById('per-sub').textContent='Le persone al centro dell\'analisi.';
+  document.getElementById('risk-sub').textContent='Analisi dei rischi principali.';
+  document.getElementById('riskTable').innerHTML=riskFam();
+  document.getElementById('sc-sub').textContent='Proiezione patrimonio nei 3 scenari.';
+  document.getElementById('sc-chart-title').textContent='Patrimonio – 3 scenari su '+aLav+' anni';
+  document.getElementById('sc-kpis').innerHTML=kpis([
+    {l:'Scenario base',v:fmtK(patPens),cls:'kv-b',t:'kpi-b'},
+    {l:'Ottimistico',v:fmtK(patPens*1.35),cls:'kv-g',t:'kpi-g'},
+    {l:'Pessimistico',v:fmtK(Math.max(0,patPens*.55)),cls:'kv-r',t:'kpi-r'},
+  ]);
+  document.getElementById('pat-sub').textContent='Composizione e proiezione del patrimonio.';
+  document.getElementById('pat-kpis').innerHTML=kpis([
+    {l:'Risparmi',v:fmt(ris),cls:'kv-g',t:'kpi-g'},{l:'Immobili',v:fmt(imm),cls:'kv-b',t:'kpi-b'},{l:'Debiti',v:fmt(deb),cls:'kv-r',t:'kpi-r'},{l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},
+  ]);
+  document.getElementById('pat-chart2-title').textContent='Evoluzione debiti nei '+aDeb+' anni';
+  document.getElementById('plan-sub').textContent='Azioni prioritarie.';
+  document.getElementById('actionList').innerHTML=actsFam();
+  document.getElementById('nextStep').innerHTML=`Secondo incontro con <strong>${D.q_nome?.split(' ')[0]||'il cliente'}</strong>${D.q_partner_nome?' e '+D.q_partner_nome:''} per presentare il piano. Priorità: colmare gap protezione vita (${fmtK(gapM)}).`;
+}
+
+function populateAz(){
+  const ric=n('q_ricavi',1e6),cop=n('q_costi_op',8e5),amm=n('q_amm',4e4),onf=n('q_oneri_fin',2e4);
+  const ebitda=Math.max(0,ric-cop),ebit=Math.max(0,ric-cop-amm),nopat=ebit*(1-0.24);
+  const fcf=nopat+amm-n('q_capex',5e4),debFin=n('q_debito_fin',3e5),cassa=n('q_cassa',1e5);
+  const pn=n('q_pn',4e5),attivo=n('q_attivo',1.2e6);
+  const mult=n('q_multiplo',6.5),ev=Math.max(0,ebitda*mult),eqVal=Math.max(0,ev-debFin+cassa);
+  const cre=n('q_crescita',0.03),oriz=n('q_orizzonte',7);
+  const patPers=n('q_patr_pers',2e5),rFam=n('q_reddito_fam',5e3),sFam=n('q_spese_fam',3.5e3);
+  const valObj=n('q_val_obiettivo',2e6);
+  window._calc={ric,cop,amm,onf,ebitda,ebit,nopat,fcf,debFin,cassa,pn,attivo,mult,ev,eqVal,cre,oriz,patPers,rFam,sFam,valObj};
+
+  document.getElementById('ov-name').textContent=D.q_nome_az||'azienda';
+  document.getElementById('ov-sub').textContent=`${D.q_settore||''} · ${D.q_forma||''} · ${D.q_fase||''}`;
+  document.getElementById('curve-title').textContent='Corporate Life Cycle – FCF proiettato';
+  document.getElementById('ov-kpis').innerHTML=kpis([
+    {l:'Ricavi annui',v:fmtK(ric),cls:'kv-b',t:'kpi-b'},{l:'EBITDA',v:fmtK(ebitda),cls:ebitda>0?'kv-g':'kv-r',t:ebitda>0?'kpi-g':'kpi-r'},{l:'Enterprise Value',v:fmtK(ev),cls:'kv-a',t:'kpi-a'},{l:'Equity Value',v:fmtK(eqVal),cls:'kv-g',t:'kpi-g'},
+  ]);
+  const sk=soci(),ppl=[{role:'Titolare',name:D.q_titolare||'Titolare',detail:`${D.q_titolare_eta||'—'} anni`,dream:D.q_sogno_fam,col:'#B8860B'}];
+  sk.forEach(s=>ppl.push({role:`Socio ${s.quota}%`,name:s.nome,detail:s.ruolo||'',col:'#2E6DB4'}));
+  document.getElementById('ov-people').innerHTML=pplHTML(ppl);
+  document.getElementById('per-people').innerHTML=pplHTML(ppl);
+  document.getElementById('per-sub').textContent='Struttura persone chiave.';
+  document.getElementById('risk-sub').textContent='Analisi rischi azienda e famiglia.';
+  document.getElementById('riskTable').innerHTML=riskAz();
+  document.getElementById('sc-sub').textContent='Proiezione valore aziendale.';
+  document.getElementById('sc-chart-title').textContent='Enterprise Value – 3 scenari su '+oriz+' anni';
+  document.getElementById('sc-kpis').innerHTML=kpis([
+    {l:'EV base',v:fmtK(ev),cls:'kv-b',t:'kpi-b'},{l:'EV ottimistico',v:fmtK(ev*1.4*Math.pow(1+cre*1.4,oriz)),cls:'kv-g',t:'kpi-g'},{l:'EV pessimistico',v:fmtK(Math.max(0,ev*.6*Math.pow(1+Math.max(-.05,cre*.4),oriz))),cls:'kv-r',t:'kpi-r'},
+  ]);
+  document.getElementById('pat-sub').textContent='Stato patrimoniale.';
+  document.getElementById('pat-kpis').innerHTML=kpis([
+    {l:'Attivo',v:fmtK(attivo),cls:'kv-b',t:'kpi-b'},{l:'Patrimonio netto',v:fmtK(pn),cls:'kv-g',t:'kpi-g'},{l:'Debito fin.',v:fmtK(debFin),cls:'kv-r',t:'kpi-r'},{l:'Patrimonio personale',v:fmtK(patPers),cls:'kv-a',t:'kpi-a'},
+  ]);
+  document.getElementById('pat-chart2-title').textContent='EBITDA proiettato nei '+oriz+' anni';
+  document.getElementById('plan-sub').textContent='Piano d\'azione.';
+  document.getElementById('actionList').innerHTML=actsAz();
+  document.getElementById('nextStep').innerHTML=`Incontro con <strong>${D.q_titolare||'il titolare'}</strong> per: 1) polizza key man, 2) piano successione, 3) separazione patrimoni.`;
+}
+
+function riskFam(){
+  const C=window._calc||{};
+  const mesiRis=C.ris>0?Math.round(C.ris/C.spTot):0;
+  const rows=[['Morte prematura','Copertura famiglia',C.gapM<1?'Sufficiente':'Scoperto',C.gapM<1?'g':'r',C.gapM<1?'✓ Coperto':fmtK(C.gapM)+' GAP','Polizza vita TCM'],['Malattia grave','Riserva emergenza',mesiRis>=18?'Sufficiente':mesiRis>=6?'Parziale':'Critica',mesiRis>=18?'g':mesiRis>=6?'a':'r',mesiRis+' mesi','Dread Disease'],['Invalidità parziale','Continuità reddito',C.gapTot<500?'Ok':'Rischio',C.gapTot<500?'g':'r',fmt(C.gapTot)+'/mese','Polizza IPP'],['Invalidità totale','Sostituzione reddito','Critica','r',fmt(C.gapTot)+'/mese per '+Math.round(C.etaEsaur-n('q_eta',40))+' anni','Polizza IPT'],['Longevità LTC','Copertura pensione',C.etaEsaur>=C.asp?'Ok':'Rischio',C.etaEsaur>=C.asp?'g':'r',Math.round(C.etaEsaur)+' anni coperti','Fondo pensione + LTC']];
+  return `<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Importo</th><th>Soluzione</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td><span class="risk-pill rp-${r[3]}">${r[2]}</span></td><td>${r[4]}</td><td style="color:var(--teal);font-weight:600">${r[5]}</td></tr>`).join('')}</tbody>`;
+}
+function riskAz(){
+  const rows=[['Key person','Perdita titolare',D.q_keyman==='Sì'?'Coperta':'Scoperta',D.q_keyman==='Sì'?'g':'r',fmtK((window._calc?.ev||0)*.5)+' rischio','Polizza key man'],['Invalidità titolare','Continuità operativa',D.q_inv_az==='Sì, ho un team'?'Ok':'Critica',D.q_inv_az==='Sì, ho un team'?'g':'r','Azienda dipende da te','Piano continuità + IPT'],['Concentrazione clienti','Rischio fatturato',D.q_clienti?.includes('>60%')?'Alto':'Basso',D.q_clienti?.includes('>60%')?'r':'g',D.q_clienti||'—','Diversificazione'],['Garanzie personali','Patrimonio casa',D.q_fideiuss?.includes('casa')?'Critico':'Ok',D.q_fideiuss?.includes('casa')?'r':'g',D.q_garanzie||'—','Separazione patrimoni'],['Gap successione','Passaggio generazionale',D.q_successione==='Sì, formalizzato'?'Pianificata':'Aperta',D.q_successione==='Sì, formalizzato'?'g':'a',D.q_timing||'—','Piano successione']];
+  return `<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Note</th><th>Soluzione</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td><span class="risk-pill rp-${r[3]}">${r[2]}</span></td><td>${r[4]}</td><td style="color:var(--teal);font-weight:600">${r[5]}</td></tr>`).join('')}</tbody>`;
+}
+function actsFam(){
+  const C=window._calc||{};
+  const acts=[];
+  if(C.gapM>30000)acts.push({i:'🛡️',t:'Polizza vita TCM · '+fmtK(C.gapM),p:'Per '+(D.q_partner_nome||'il partner')+' e i figli. Gap: '+fmtK(C.gapM)+'.',c:D.dream_partner,tag:'PRIORITÀ',tc:'at-now'});
+  acts.push({i:'🏥',t:'Polizza Dread Disease',p:'Riserva: '+Math.round(C.ris>0?C.ris/C.spTot:0)+' mesi. Il capitale alla diagnosi copre tutto.',c:null,tag:'ENTRO 60 GG',tc:'at-now'});
+  acts.push({i:'⚡',t:'Polizza IPT',p:'INPS invalido: ~€700/mese. Gap: '+fmt(C.gapTot)+'/mese.',c:D.dream_se,tag:'ENTRO 60 GG',tc:'at-now'});
+  if(C.gapPensM>200)acts.push({i:'📈',t:'Fondo pensione integrativo',p:'Gap: '+fmt(C.gapPensM)+'/mese a pensione.',c:null,tag:'ENTRO 3 MESI',tc:'at-soon'});
+  acts.push({i:'🧓',t:'Polizza LTC',p:'1 anziano su 4 ne ha bisogno. Costo medio €2.800/mese.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
+  return acts.map(a=>`<div class="action"><div class="a-icon">${a.i}</div><div class="a-body"><h4>${a.t}</h4><p>${a.p}</p>${a.c?`<div class="a-cost">${a.c}</div>`:''}<div class="a-tag ${a.tc}">▸ ${a.tag}</div></div></div>`).join('');
+}
+function actsAz(){
+  const acts=[];
+  if(D.q_keyman!=='Sì')acts.push({i:'🔑',t:'Polizza key man · '+fmtK((window._calc?.ev||0)*.4),p:'Il titolare è la risorsa più critica. Premi deducibili come costo aziendale.',c:D.q_paura,tag:'PRIORITÀ',tc:'at-now'});
+  if(D.q_fideiuss?.includes('casa'))acts.push({i:'🏠',t:'Separazione patrimoni',p:'La casa del titolare è a garanzia di debiti aziendali.',c:D.q_sogno_fam,tag:'PRIORITÀ',tc:'at-now'});
+  if(D.q_successione!=='Sì, formalizzato')acts.push({i:'📜',t:'Piano successione',p:'Obiettivo: '+D.q_obiettivo_az+'. Timing: '+D.q_timing+'.',c:D.q_sogno_eredi,tag:'ENTRO 6 MESI',tc:'at-now'});
+  acts.push({i:'⚡',t:'Polizza IPT titolare',p:D.q_inv_az==='No, dipende da me'?'Se il titolare si invalida, l\'azienda si ferma.':'Serve IPT + piano continuità.',c:null,tag:'ENTRO 60 GG',tc:'at-soon'});
+  if(D.q_prev_az==='Solo INPS / cassa'||D.q_prev_az==='No')acts.push({i:'📈',t:'Previdenza titolare',p:'Solo INPS non basta. Fondo pensione aziendale con deducibilità.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
+  return acts.map(a=>`<div class="action"><div class="a-icon">${a.i}</div><div class="a-body"><h4>${a.t}</h4><p>${a.p}</p>${a.c?`<div class="a-cost">${a.c}</div>`:''}<div class="a-tag ${a.tc}">▸ ${a.tag}</div></div></div>`).join('');
+}
+function buildRawTable(){
+  const skip=['tipo','data','ora','figli','soci','_ebitda','_ebit','_margin'];
+  document.getElementById('rawTable').innerHTML=`<thead><tr><th>Campo</th><th>Valore</th></tr></thead><tbody>${Object.entries(D).filter(([k])=>!skip.includes(k)&&D[k]).map(([k,v])=>`<tr><td style="color:var(--grey)">${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
+}
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+function buildChartsForPanel(pid){tipo==='famiglie'?buildFamCharts(pid):buildAzCharts(pid);}
+
+function buildFamCharts(pid){
+  const C=window._calc||{};if(!C.eta)return;
+  const {eta,etaP,asp,ris,imm,deb,rat,aDeb,rend,aLav,aPens,rispNA,patNetto,patPens,spTot,spC,spQ,spF,spS,spSv,gapPensM}=C;
+  const N=aLav+aPens+1,yrs=Array.from({length:N},(_,i)=>i);
+
+  if(pid==='overview'||pid==='scenari'){
+    const mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();let w=patNetto;const pos=[],neg=[];yrs.forEach(i=>{if(i<=aLav)w=w*(1+rend)+rispNA;else w=Math.max(patNetto*-.5,w*(1+rend)-gapPensM*12);pos.push(Math.max(0,Math.round(w)));neg.push(Math.min(0,Math.round(w)));});
+    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(i=>eta+i),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4},{data:neg,fill:true,backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.5)',borderWidth:2,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}}});}
+    const dc=document.getElementById('costDonut');if(dc){if(CH.costDonut)CH.costDonut.destroy();const items=[spC,spQ,spF,spS,spSv].filter(v=>v>0),lbls=['Casa','Quotidiano','Figli','Salute','Svago'].slice(0,items.length);CH.costDonut=new Chart(dc,{type:'doughnut',data:{labels:lbls,datasets:[{data:items,backgroundColor:['rgba(229,62,62,.75)','rgba(214,158,46,.75)','rgba(56,161,105,.75)','rgba(49,130,206,.75)','rgba(128,90,213,.75)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#666'}}}}});}
+    if(pid==='scenari'||document.getElementById('scenChart')){const sc=document.getElementById('scenChart');if(sc&&!CH.scenChart){let wb=patNetto,wo=patNetto,wp=patNetto;const base=[],opt=[],pess=[];yrs.forEach(i=>{if(i<=aLav){wb=wb*(1+rend)+rispNA;wo=wo*(1+rend*1.5)+rispNA*1.3;wp=Math.max(-200000,wp*(1+rend*.5)+rispNA*.5);}else{wb=Math.max(0,wb*(1+rend)-gapPensM*12);wo=Math.max(0,wo*(1+rend*1.5)-gapPensM*10);wp=Math.max(-200000,wp*(1+rend*.3)-gapPensM*14);}base.push(Math.round(wb));opt.push(Math.round(wo));pess.push(Math.round(wp));});CH.scenChart=new Chart(sc,{type:'line',data:{labels:yrs.map(i=>eta+i),datasets:[{data:base,borderColor:'rgba(46,109,180,.8)',backgroundColor:'rgba(46,109,180,.08)',fill:true,borderWidth:2.5,pointRadius:0,tension:.4,label:'Base'},{data:opt,borderColor:'rgba(26,95,80,.8)',backgroundColor:'rgba(26,95,80,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Ottimistico'},{data:pess,borderColor:'rgba(139,32,32,.7)',backgroundColor:'rgba(139,32,32,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Pessimistico'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:11}}}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}});}}
+  }
+  if(pid==='rischi'){
+    const rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();const mesiRis=C.ris>0?C.ris/C.spTot:0;CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Morte','Malattia','Inv. parz.','Inv. totale','Longevità','LTC'],datasets:[{label:'Rischio',data:[C.gapM>50000?90:C.gapM>20000?65:35,mesiRis<6?90:mesiRis<12?70:40,C.gapTot>500?80:50,85,C.etaEsaur<C.asp?80:55,85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
+    const gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['Morte','Malattia','LTC'],datasets:[{label:'Disponibile',data:[C.covM,ris,patPens],backgroundColor:'rgba(26,95,80,.65)',borderRadius:4},{label:'Necessario',data:[C.fabM,spTot*12,2800*12*8],backgroundColor:'rgba(139,32,32,.5)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+  }
+  if(pid==='patrimonio'){
+    const pp=document.getElementById('patPie');if(pp){if(CH.patPie)CH.patPie.destroy();CH.patPie=new Chart(pp,{type:'doughnut',data:{labels:['Risparmi','Immobili','Debiti'],datasets:[{data:[ris,imm,deb],backgroundColor:['rgba(26,95,80,.7)','rgba(46,109,180,.7)','rgba(139,32,32,.7)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
+    const pl=document.getElementById('patLine');if(pl){if(CH.patLine)CH.patLine.destroy();const dY=Array.from({length:aDeb+1},(_,i)=>i);CH.patLine=new Chart(pl,{type:'line',data:{labels:dY.map(i=>'Anno '+i),datasets:[{data:dY.map(i=>Math.max(0,deb-rat*12*i)),borderColor:'rgba(139,32,32,.7)',fill:true,backgroundColor:'rgba(139,32,32,.08)',borderWidth:2,pointRadius:0,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:8}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+  }
+}
+
+function buildAzCharts(pid){
+  const C=window._calc||{};if(!C.ric)return;
+  const {ric,ebitda,ev,cre,oriz,valObj,fcf,cop,amm,debFin,cassa,pn}=C;
+  if(pid==='overview'||pid==='scenari'){
+    const mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();const yrs=Array.from({length:oriz+1},(_,i)=>i);CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(i=>'Anno '+i),datasets:[{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre,i)*C.mult)),borderColor:'rgba(46,109,180,.8)',fill:false,borderWidth:2.5,pointRadius:0,tension:.4,label:'EV Base'},{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre*1.4,i)*C.mult*1.2)),borderColor:'rgba(26,95,80,.7)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Ottimistico'},{data:yrs.map(i=>Math.max(0,Math.round(ebitda*Math.pow(1+Math.max(-.05,cre*.4),i)*C.mult*.7))),borderColor:'rgba(139,32,32,.6)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Pessimistico'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+    const cd=document.getElementById('costDonut');if(cd){if(CH.costDonut)CH.costDonut.destroy();CH.costDonut=new Chart(cd,{type:'doughnut',data:{labels:['Costi op.','Ammort.','Oneri fin.','EBITDA'],datasets:[{data:[cop-amm,amm,C.onf,ebitda],backgroundColor:['rgba(139,32,32,.65)','rgba(138,64,10,.6)','rgba(184,134,11,.6)','rgba(26,95,80,.7)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
+  }
+  if(pid==='rischi'){
+    const rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Key Person','Clienti','Garanzie','Successione','Liquidità','Invalidità'],datasets:[{label:'Rischio',data:[D.q_keyman==='Sì'?20:90,D.q_clienti?.includes('>60%')?85:40,D.q_fideiuss?.includes('casa')?90:20,D.q_successione==='Sì, formalizzato'?15:80,C.cassa>ric*.1?30:70,D.q_inv_az==='Sì, ho un team'?25:85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
+    const gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['EV attuale','Target exit','Patr. pers.'],datasets:[{label:'Valore',data:[ev,valObj,C.patPers],backgroundColor:['rgba(46,109,180,.65)','rgba(26,95,80,.65)','rgba(184,134,11,.65)'],borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+  }
+  if(pid==='patrimonio'){
+    const pp=document.getElementById('patPie');if(pp){if(CH.patPie)CH.patPie.destroy();CH.patPie=new Chart(pp,{type:'doughnut',data:{labels:['PN','Debito','Cassa'],datasets:[{data:[pn,debFin,cassa],backgroundColor:['rgba(26,95,80,.7)','rgba(139,32,32,.7)','rgba(184,134,11,.65)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
+    const pl=document.getElementById('patLine');if(pl){if(CH.patLine)CH.patLine.destroy();const yrs=Array.from({length:oriz+1},(_,i)=>i);CH.patLine=new Chart(pl,{type:'line',data:{labels:yrs.map(i=>'Anno '+i),datasets:[{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre,i))),borderColor:'rgba(26,95,80,.7)',fill:true,backgroundColor:'rgba(26,95,80,.08)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+  }
+}
+
+// ═══════════════════════════════════════
+// EXCEL
+// ═══════════════════════════════════════
+function generateExcel(){
+  const wb=XLSX.utils.book_new();
+  if(tipo==='famiglie'){
+    const C=window._calc||{};
+    const sum=[['ANALISI FAMILIARE – MODIGLIANI','',''],[D.q_nome||'Cliente','Data:',D.data||''],['','',''],['REDDITO','',''],['Reddito netto mensile',C.red,'€'],['Spese mensili',C.spTot,'€'],['Risparmio netto/mese',C.rispNM,'€'],['','',''],['PATRIMONIO','',''],['Risparmi',C.ris,'€'],['Immobili',C.imm,'€'],['Debiti',C.deb,'€'],['Patrimonio netto',C.patNetto,'€'],['','',''],['PREVISIONI','',''],['Patrimonio a pensione',C.patPens,'€'],['Obiettivo',n('q_obiettivo',0),'€'],['Gap',Math.abs(C.patPens-n('q_obiettivo',0)),'€']];
+    const ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
+  }else{
+    const C=window._calc||{};
+    const sum=[['ANALISI AZIENDALE – DAMODARAN','',''],[D.q_nome_az||'Azienda','Data:',D.data||''],['','',''],['CONTO ECONOMICO','',''],['Ricavi',C.ric,'€'],['EBITDA',C.ebitda,'€'],['FCF',Math.round(C.fcf),'€'],['','',''],['VALUTAZIONE','',''],['Enterprise Value',C.ev,'€'],['Equity Value',C.eqVal,'€'],['Target exit',C.valObj,'€']];
+    const ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
+  }
+  const name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');
+  XLSX.writeFile(wb,`analisi_${name}_${D.data?.replace(/\//g,'-')||'report'}.xlsx`);
+  toast('⬇️ Excel scaricato');
+}
+
+// ═══════════════════════════════════════
+// WHATSAPP
+// ═══════════════════════════════════════
+function sendWA(){
+  const C=window._calc||{};
+  let txt='';
+  if(tipo==='famiglie'){
+    const fs=figli();
+    txt=`📊 *Analisi Familiare – ${D.q_nome||'Cliente'}*\n👤 ${C.eta} anni · ${D.q_categ||''}\n💰 Reddito: ${fmt(C.red||0)}/mese\n🏦 Patrimonio: ${fmtK(C.patNetto||0)}\n📈 Pensione: ${fmtK(C.patPens||0)} stimata\n⚠️ Gap protezione: ${fmtK(C.gapM||0)}\n\n🎯 Azioni prioritarie:\n1. Polizza vita TCM\n2. Dread Disease\n3. Polizza IPT`;
+  }else{
+    txt=`🏢 *Analisi Aziendale – ${D.q_nome_az||'Azienda'}*\n📊 ${D.q_settore||''} · ${D.q_fase||''}\n💰 Ricavi: ${fmtK(C.ric||0)}/anno\n📈 EBITDA: ${fmtK(C.ebitda||0)}\n💎 EV: ${fmtK(C.ev||0)}\n\n🎯 Azioni:\n1. Polizza key man\n2. Piano successione\n3. Separazione patrimoni`;
+  }
+  window.open('https://wa.me/?text='+encodeURIComponent(txt));
+  toast('📱 WhatsApp aperto');
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function toast(msg,type){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type==='err'?' err':'');t.classList.add('show');
+  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
