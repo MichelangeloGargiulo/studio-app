@@ -317,49 +317,103 @@ input[type=file]{display:none}
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
-const CONFIG={password:'1234'};
-const LANG={
-it:{pw_title:'Accesso Studio',pw_sub:'Inserisci il codice di accesso dello studio professionale',pw_error:'Codice non valido. Riprova.',pw_btn:'Accedi',pw_hint:'Codice predefinito: <strong>1234</strong>',imp_title:'Elabora il<br>report dal cliente',imp_sub:'Importa i dati raccolti con l\'app mobile · Il sistema genera automaticamente analisi, grafici e piano d\'azione'},
-en:{pw_title:'Studio Access',pw_sub:'Enter the access code provided by your firm',pw_error:'Invalid code. Try again.',pw_btn:'Login',pw_hint:'Default code: <strong>1234</strong>',imp_title:'Process the<br>client report',imp_sub:'Import data collected from the mobile app · The system automatically generates analysis, charts and action plan'}
+var CONFIG={password:'1234'};
+var LANG={
+it:{pw_title:'Accesso Studio',pw_sub:'Inserisci il codice di accesso',pw_error:'Codice non valido',pw_btn:'Accedi',pw_hint:'Password: <strong>1234</strong>'},
+en:{pw_title:'Studio Access',pw_sub:'Enter access code',pw_error:'Invalid code',pw_btn:'Login',pw_hint:'Password: <strong>1234</strong>'}
 };
-let currentLang='it',D={},tipo='famiglie',unlocked=false;
-const CH={},selectedType='famiglie';
+var currentLang='it',D={},tipo='famiglie',unlocked=false;
+var CH={},selectedType='famiglie';
 
 // ═══════════════════════════════════════
-// PASSWORD
+// PASSWORD - SEMPLICE E DIRETTA
 // ═══════════════════════════════════════
 function checkPassword(){
-  if(document.getElementById('pwInput').value.trim()===CONFIG.password){
-    unlocked=true;document.getElementById('pwGate').style.display='none';
+  var input=document.getElementById('pwInput');
+  var pw=input.value.trim();
+  console.log('Password inserita:',pw);
+  if(pw===CONFIG.password){
+    console.log('Password OK!');
+    unlocked=true;
+    document.getElementById('pwGate').style.display='none';
     document.getElementById('langBar').style.display='flex';
     document.getElementById('importScreen').style.display='flex';
-    document.getElementById('pwInput').value='';
-    const saved=localStorage.getItem('studio_last');
-    if(saved){try{const sd=JSON.parse(saved);if(sd.tipo){D=sd;tipo=D.tipo;start();return;}}catch(e){}}
-  }else{document.getElementById('pwError').style.display='block';}
+    document.getElementById('app').style.display='none';
+    document.body.style.overflow='auto';
+  }else{
+    console.log('Password SBAGLIATA');
+    document.getElementById('pwError').style.display='block';
+    input.value='';
+    setTimeout(function(){input.focus();},100);
+  }
 }
-document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPassword();});
+
+// Aspetta che la pagina sia pronta
+window.onload=function(){
+  console.log('App pronta');
+  document.getElementById('pwInput').focus();
+  document.getElementById('pwInput').addEventListener('keydown',function(e){
+    if(e.key==='Enter')checkPassword();
+  });
+};
 
 // ═══════════════════════════════════════
 // LINGUA
 // ═══════════════════════════════════════
 function setLang(l){
-  currentLang=l;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent.includes(l.toUpperCase())));
-  document.querySelectorAll('[data-lang]').forEach(el=>{const k=el.dataset.lang;if(LANG[l]&&LANG[l][k])el.innerHTML=LANG[l][k];});
+  currentLang=l;
+  document.querySelectorAll('.lang-btn').forEach(function(b){
+    b.classList.toggle('active',b.textContent.indexOf(l.toUpperCase())>=0);
+  });
+  document.querySelectorAll('[data-lang]').forEach(function(el){
+    var k=el.dataset.lang;
+    if(LANG[l]&&LANG[l][k])el.innerHTML=LANG[l][k];
+  });
   localStorage.setItem('studio_lang',l);
 }
-(function(){const sl=localStorage.getItem('studio_lang');if(sl)currentLang=sl;setLang(currentLang);document.getElementById('pwInput').focus();})();
+setLang(currentLang);
+
+// ═══════════════════════════════════════
+// TYPE SELECTOR
+// ═══════════════════════════════════════
+function setType(t){
+  selectedType=t;
+  document.getElementById('tc-fam').classList.toggle('sel',t==='famiglie');
+  document.getElementById('tc-az').classList.toggle('sel',t==='azienda');
+}
 
 // ═══════════════════════════════════════
 // IMPORT
 // ═══════════════════════════════════════
-function setType(t){selectedType=t;document.getElementById('tc-fam').classList.toggle('sel',t==='famiglie');document.getElementById('tc-az').classList.toggle('sel',t==='azienda');}
-function loadFile(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{D=JSON.parse(e.target.result);start();}catch{toast('File non valido','err');}};r.readAsText(f);}
-function importData(){const raw=document.getElementById('codeIn').value.trim();if(!raw){toast('Incolla un codice o carica un file','err');return;}try{D=raw.startsWith('{')?JSON.parse(raw):JSON.parse(decodeURIComponent(escape(atob(raw))));start();}catch(e){toast('Codice non valido. Prova Demo.','err');}}
-function loadLast(){const saved=localStorage.getItem('studio_last');if(saved){try{D=JSON.parse(saved);tipo=D.tipo;start();}catch(e){toast('Nessun report salvato','err');}}else{toast('Nessun report salvato','err');}}
-function loadDemo(){tipo=selectedType;tipo==='azienda'?loadDemoAz():loadDemoFam();start();}
-function loadDemoFam(){D={tipo:'famiglie',data:new Date().toLocaleDateString('it-IT'),q_nome:'Marco Bianchi',q_eta:'42',q_coppia:'Sì',q_partner_nome:'Maria',q_partner_eta:'39',figli:'[{"nome":"Lorenzo","eta":"9"},{"nome":"Sofia","eta":"6"}]',q_reddito:'3200',q_reddito_partner:'1000',q_casa:'Proprietà (con mutuo)',q_immobile:'230000',q_risparmi:'52000',q_debiti:'95000',q_rata:'680',q_anni_deb:'16',q_pensione:'1350',q_obiettivo:'280000',q_aspett:'85',q_sp_casa:'900',q_sp_quotidiano:'950',q_sp_figli:'380',q_sp_salute:'130',q_sp_svago:'260',q_categ:'Dipendente privato',q_unione:'Matrimonio civile',q_partner_lavora:'Sì, part-time',q_scuola:'Università fuori sede',q_genitori:'Solo madre',q_gen_aiuto_si:'Sì',q_gen_aiuto:'250',q_animali:'1 cane',q_animali_costo:'90',q_auto:'2',q_moto:'1',q_bici:'2',q_vacanze:'Europa',q_vacanze_spesa:'5000',q_stabilita:'Abbastanza stabile',q_eta_pens:'67',q_altri_imm:'No',q_risp_tipo:'Mix diversificato',q_eredita:'Forse',q_eredita_val:'120000',q_eredita_tipo:'Immobili',q_testamento:'No, ma ci penso',q_fondo:'No',q_rischio:'Prudente',dream_partner:'Che Maria non debba ricominciare a lavorare da sola dopo i 60',dream_figli:'Che Lorenzo e Sofia possano studiare quello che vogliono',dream_se:'Restare autonomo',q_note:'Mutuo sulla prima casa. Vorrei capire se siamo coperti.'};}
-function loadDemoAz(){D={tipo:'azienda',data:new Date().toLocaleDateString('it-IT'),q_nome_az:'Rossi Costruzioni Srl',q_settore:'Costruzioni / Real Estate',q_ricavi:'1250000',q_costi_op:'980000',q_amm:'45000',q_oneri_fin:'28000',q_pn:'520000',q_debito_fin:'380000',q_cassa:'120000',q_capex:'75000',q_crescita:'0.03',q_multiplo:'6.5',q_orizzonte:'7',q_val_obiettivo:'3000000',q_titolare:'Giovanni Rossi',q_titolare_eta:'48',q_keyman:'No',q_inv_az:'No, dipende da me',q_fideiuss:'Sì, sulla casa',q_successione:'No, ma ci penso',q_obiettivo_az:'Passaggio generazionale',q_timing:'6-10 anni',q_dipend_fam:'Completamente',q_reddito_fam:'6800',q_spese_fam:'4200',q_patr_pers:'280000',q_key_person:'Solo io',q_eredi_az:'Sì, in futuro',q_prev_az:'Solo INPS / cassa',q_sogno_fam:'Che la casa sia salva. Sempre.',q_paura:'Ammalarmi senza un piano. Lasciare debiti a mia moglie.'};}
+function loadFile(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){try{D=JSON.parse(e.target.result);start();}catch(ex){toast('File non valido','err');}};
+  r.readAsText(f);
+}
+function importData(){
+  var raw=document.getElementById('codeIn').value.trim();
+  if(!raw){toast('Incolla un codice','err');return;}
+  try{
+    if(raw.charAt(0)==='{')D=JSON.parse(raw);
+    else D=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    start();
+  }catch(e){toast('Codice non valido','err');}
+}
+function loadLast(){
+  var saved=localStorage.getItem('studio_last');
+  if(saved){try{D=JSON.parse(saved);tipo=D.tipo;start();}catch(e){toast('Errore','err');}}
+  else{toast('Nessun report','err');}
+}
+function loadDemo(){
+  tipo=selectedType;
+  if(tipo==='azienda')loadDemoAz();else loadDemoFam();
+  start();
+}
+function loadDemoFam(){
+  D={tipo:'famiglie',data:new Date().toLocaleDateString('it-IT'),q_nome:'Marco Bianchi',q_eta:'42',q_coppia:'S\u00ec',q_partner_nome:'Maria',q_partner_eta:'39',figli:'[{"nome":"Lorenzo","eta":"9"},{"nome":"Sofia","eta":"6"}]',q_reddito:'3200',q_reddito_partner:'1000',q_casa:'Propriet\u00e0 (con mutuo)',q_immobile:'230000',q_risparmi:'52000',q_debiti:'95000',q_rata:'680',q_anni_deb:'16',q_pensione:'1350',q_obiettivo:'280000',q_aspett:'85',q_sp_casa:'900',q_sp_quotidiano:'950',q_sp_figli:'380',q_sp_salute:'130',q_sp_svago:'260',q_categ:'Dipendente privato',q_unione:'Matrimonio civile',q_partner_lavora:'S\u00ec, part-time',q_scuola:'Universit\u00e0 fuori sede',q_genitori:'Solo madre',q_gen_aiuto_si:'S\u00ec',q_gen_aiuto:'250',q_animali:'1 cane',q_animali_costo:'90',q_auto:'2',q_moto:'1',q_bici:'2',q_vacanze:'Europa',q_vacanze_spesa:'5000',q_stabilita:'Abbastanza stabile',q_eta_pens:'67',q_altri_imm:'No',q_risp_tipo:'Mix diversificato',q_eredita:'Forse',q_eredita_val:'120000',q_eredita_tipo:'Immobili',q_testamento:'No, ma ci penso',q_fondo:'No',q_rischio:'Prudente',dream_partner:'Che Maria non debba ricominciare',dream_figli:'Che studino quello che vogliono',dream_se:'Restare autonomo',q_note:'Mutuo sulla prima casa'};
+}
+function loadDemoAz(){D={tipo:'azienda',data:new Date().toLocaleDateString('it-IT'),q_nome_az:'Rossi Costruzioni Srl',q_settore:'Costruzioni / Real Estate',q_ricavi:'1250000',q_costi_op:'980000',q_amm:'45000',q_oneri_fin:'28000',q_pn:'520000',q_debito_fin:'380000',q_cassa:'120000',q_capex:'75000',q_crescita:'0.03',q_multiplo:'6.5',q_orizzonte:'7',q_val_obiettivo:'3000000',q_titolare:'Giovanni Rossi',q_titolare_eta:'48',q_keyman:'No',q_inv_az:'No, dipende da me',q_fideiuss:'S\u00ec, sulla casa',q_successione:'No, ma ci penso',q_obiettivo_az:'Passaggio generazionale',q_timing:'6-10 anni',q_dipend_fam:'Completamente',q_reddito_fam:'6800',q_spese_fam:'4200',q_patr_pers:'280000',q_key_person:'Solo io',q_eredi_az:'S\u00ec, in futuro',q_prev_az:'Solo INPS / cassa',q_sogno_fam:'Che la casa sia salva',q_paura:'Lasciare debiti a mia moglie'};}
 
 // ═══════════════════════════════════════
 // START
@@ -369,45 +423,42 @@ function start(){
   document.getElementById('importScreen').style.display='none';
   document.getElementById('app').style.display='flex';
   buildSidebar();buildTopbar();populate();
-  setTimeout(()=>buildChartsForPanel('overview'),300);
+  setTimeout(function(){buildChartsForPanel('overview');},300);
   try{localStorage.setItem('studio_last',JSON.stringify(D));}catch(e){}
-  toast('✅ Report generato');
+  toast('\u2705 Report generato');
 }
-
 function newReport(){
   D={};tipo=selectedType;
-  Object.keys(CH).forEach(k=>{if(CH[k])CH[k].destroy();delete CH[k];});
+  Object.keys(CH).forEach(function(k){if(CH[k])CH[k].destroy();delete CH[k];});
   document.getElementById('app').style.display='none';
   document.getElementById('importScreen').style.display='flex';
   document.getElementById('codeIn').value='';
-  document.getElementById('fileIn').value='';
 }
 
 // ═══════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════
-const n=(k,d=0)=>parseFloat(D[k])||d;
-const fmt=v=>'€ '+Math.round(v).toLocaleString('it-IT');
-const fmtK=v=>v>=1e6?'€ '+(v/1e6).toFixed(2)+' Mln':v>=1000?'€ '+Math.round(v/1000)+'K':fmt(v);
-const figli=()=>{try{return JSON.parse(D.figli||'[]');}catch{return[];}};
-const soci=()=>{try{return JSON.parse(D.soci||'[]');}catch{return[];}};
+function n(k,d){d=d||0;return parseFloat(D[k])||d;}
+function fmt(v){return '\u20ac '+Math.round(v).toLocaleString('it-IT');}
+function fmtK(v){return v>=1e6?'\u20ac '+(v/1e6).toFixed(2)+' Mln':v>=1000?'\u20ac '+Math.round(v/1000)+'K':fmt(v);}
+function figli(){try{return JSON.parse(D.figli||'[]');}catch(e){return[];}}
+function soci(){try{return JSON.parse(D.soci||'[]');}catch(e){return[];}}
 
 // ═══════════════════════════════════════
 // SIDEBAR
 // ═══════════════════════════════════════
-const FAM_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👨‍👩‍👧',label:'Le persone'},{id:'patrimonio',icon:'🏦',label:'Patrimonio'},{id:'rischi',icon:'⚠️',label:'Analisi rischi'},{id:'scenari',icon:'📈',label:'Scenari futuri'},{id:'piano',icon:'🎯',label:'Piano d\'azione'},{id:'dati',icon:'📋',label:'Dati raccolti'}];
-const AZ_MENU=[{id:'overview',icon:'📊',label:'Panoramica'},{id:'persone',icon:'👤',label:'Persone & struttura'},{id:'patrimonio',icon:'🏦',label:'Finanza aziendale'},{id:'rischi',icon:'⚠️',label:'Analisi rischi'},{id:'scenari',icon:'📈',label:'Scenari futuri'},{id:'piano',icon:'🎯',label:'Piano d\'azione'},{id:'dati',icon:'📋',label:'Dati raccolti'}];
+var FAM_MENU=[{id:'overview',icon:'\ud83d\udcca',label:'Panoramica'},{id:'persone',icon:'\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67',label:'Le persone'},{id:'patrimonio',icon:'\ud83c\udfe6',label:'Patrimonio'},{id:'rischi',icon:'\u26a0\ufe0f',label:'Rischi'},{id:'scenari',icon:'\ud83d\udcc8',label:'Scenari'},{id:'piano',icon:'\ud83c\udfaf',label:'Piano'},{id:'dati',icon:'\ud83d\udccb',label:'Dati'}];
+var AZ_MENU=[{id:'overview',icon:'\ud83d\udcca',label:'Panoramica'},{id:'persone',icon:'\ud83d\udc64',label:'Persone'},{id:'patrimonio',icon:'\ud83c\udfe6',label:'Finanza'},{id:'rischi',icon:'\u26a0\ufe0f',label:'Rischi'},{id:'scenari',icon:'\ud83d\udcc8',label:'Scenari'},{id:'piano',icon:'\ud83c\udfaf',label:'Piano'},{id:'dati',icon:'\ud83d\udccb',label:'Dati'}];
 function buildSidebar(){
-  const menu=tipo==='azienda'?AZ_MENU:FAM_MENU;
-  document.getElementById('sidebar').innerHTML=`<div class="sb-section"><div class="sb-head">Analisi del ${D.data||new Date().toLocaleDateString('it-IT')}</div>`+
-    menu.map(m=>`<div class="sb-item${m.id==='overview'?' active':''}" onclick="showPanel('${m.id}')"><span class="sb-icon">${m.icon}</span>${m.label}</div>`).join('')+'</div>';
+  var menu=tipo==='azienda'?AZ_MENU:FAM_MENU;
+  document.getElementById('sidebar').innerHTML='<div class="sb-section"><div class="sb-head">Analisi del '+(D.data||new Date().toLocaleDateString('it-IT'))+'</div>'+menu.map(function(m,i){return '<div class="sb-item'+(i===0?' active':'')+'" onclick="showPanel(\''+m.id+'\')"><span class="sb-icon">'+m.icon+'</span>'+m.label+'</div>';}).join('')+'</div>';
 }
 function showPanel(id){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  document.getElementById('p-'+id)?.classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(i=>{if(i.onclick?.toString().includes(`'${id}'`))i.classList.add('active');});
-  setTimeout(()=>buildChartsForPanel(id),150);
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.sb-item').forEach(function(i){i.classList.remove('active');});
+  var panel=document.getElementById('p-'+id);if(panel)panel.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(function(i){if(i.onclick&&i.onclick.toString().indexOf("'"+id+"'")>=0)i.classList.add('active');});
+  setTimeout(function(){buildChartsForPanel(id);},150);
 }
 
 // ═══════════════════════════════════════
@@ -415,226 +466,176 @@ function showPanel(id){
 // ═══════════════════════════════════════
 function buildTopbar(){
   document.getElementById('tbClient').textContent=tipo==='azienda'?(D.q_nome_az||'Azienda'):(D.q_nome||'Cliente');
-  const te=document.getElementById('tbType');te.textContent=tipo==='azienda'?'AZIENDA':'FAMIGLIE';te.className='tb-type '+(tipo==='azienda'?'tbt-az':'tbt-fam');
+  var te=document.getElementById('tbType');te.textContent=tipo==='azienda'?'AZIENDA':'FAMIGLIE';te.className='tb-type '+(tipo==='azienda'?'tbt-az':'tbt-fam');
 }
 
 // ═══════════════════════════════════════
-// POPULATE
+// KPI helper
+// ═══════════════════════════════════════
+function kpis(items){
+  return items.map(function(i){return '<div class="kpi '+(i.t||'')+'"><div class="kpi-label">'+i.l+'</div><div class="kpi-value '+(i.cls||'')+'">'+i.v+'</div></div>';}).join('');
+}
+function pplHTML(items){
+  var colors=['#B8860B','#8B2020','#1D4731','#8A4010','#2E6DB4','#1A5F50'];
+  return items.map(function(p,i){return '<div class="person-card" style="flex:1;min-width:150px"><div class="pc-top" style="background:'+(p.col||colors[i%6])+'"></div><div class="pc-role">'+p.role+'</div><div class="pc-name">'+p.name+'</div><div class="pc-detail">'+p.detail+'</div>'+(p.dream?'<div class="pc-dream">"'+p.dream+'"</div>':'')+'</div>';}).join('');
+}
+
+// ═══════════════════════════════════════
+// Abbreviazioni per popolare (stessa logica di prima, compressa)
 // ═══════════════════════════════════════
 function populate(){tipo==='azienda'?populateAz():populateFam();buildRawTable();}
-function kpis(items){return items.map(i=>`<div class="kpi ${i.t||''}"><div class="kpi-label">${i.l}</div><div class="kpi-value ${i.cls||''}">${i.v}</div></div>`).join('');}
-function pplHTML(items){const colors=['#B8860B','#8B2020','#1D4731','#8A4010','#2E6DB4','#1A5F50'];return items.map((p,i)=>`<div class="person-card" style="flex:1;min-width:150px"><div class="pc-top" style="background:${p.col||colors[i%6]}"></div><div class="pc-role">${p.role}</div><div class="pc-name">${p.name}</div><div class="pc-detail">${p.detail}</div>${p.dream?`<div class="pc-dream">"${p.dream}"</div>`:''}</div>`).join('');}
-
 function populateFam(){
-  const fs=figli(),eta=n('q_eta',40),etaP=n('q_eta_pens',67),asp=n('q_aspett',85);
-  const red=n('q_reddito',2800),redP=n('q_reddito_partner',0);
-  const spC=n('q_sp_casa',700),spQ=n('q_sp_quotidiano',800),spF=n('q_sp_figli',300),spS=n('q_sp_salute',100),spSv=n('q_sp_svago',200);
-  const spTot=spC+spQ+spF+spS+spSv;
-  const ris=n('q_risparmi',40000),imm=n('q_immobile',200000),deb=n('q_debiti',80000),rat=n('q_rata',600),aDeb=n('q_anni_deb',12);
-  const pen=n('q_pensione',1300),genAiuto=n('q_gen_aiuto',0);
-  const rend=0.03,inf=0.02,aLav=Math.max(1,etaP-eta),aPens=Math.max(1,asp-etaP);
-  const rispNM=red+redP-spTot-rat-genAiuto,rispNA=rispNM*12,patNetto=ris+imm-deb;
-  const patPens=Math.max(0,ris*Math.pow(1+rend,aLav)+rispNA*((Math.pow(1+rend,aLav)-1)/rend));
-  const inpsRev=Math.max(400,pen*.6),spePens=spTot*.85*Math.pow(1+inf,aLav);
-  const gapPensM=Math.max(0,spePens-pen);
-  const youngest=fs.length>0?Math.min(...fs.map(f=>parseInt(f.eta)||10)):0;
-  const aCovM=youngest>0?Math.max(15,25-youngest)+(asp-n('q_partner_eta',38)):asp-eta;
-  const fabM=(spTot-inpsRev)*12*aCovM,covM=ris+Math.min(imm*.4,80000);
-  const gapM=Math.max(0,fabM-covM),gapTot=Math.max(0,spTot-700);
-  const aCovP=gapPensM>0?Math.min(aPens,patPens/(Math.max(1,gapPensM)*12)):aPens,etaEsaur=etaP+aCovP;
-  window._calc={eta,etaP,asp,red,redP,spTot,spC,spQ,spF,spS,spSv,ris,imm,deb,rat,aDeb,pen,rend,inf,aLav,aPens,rispNM,rispNA,patNetto,patPens,inpsRev,spePens,gapPensM,fabM,covM,gapM,gapTot,aCovP,etaEsaur,fs};
-
+  var fs=figli(),eta=n('q_eta',40),etaP=n('q_eta_pens',67),asp=n('q_aspett',85);
+  var red=n('q_reddito',2800),redP=n('q_reddito_partner',0);
+  var spC=n('q_sp_casa',700),spQ=n('q_sp_quotidiano',800),spF=n('q_sp_figli',300),spS=n('q_sp_salute',100),spSv=n('q_sp_svago',200);
+  var spTot=spC+spQ+spF+spS+spSv;
+  var ris=n('q_risparmi',40000),imm=n('q_immobile',200000),deb=n('q_debiti',80000),rat=n('q_rata',600),aDeb=n('q_anni_deb',12);
+  var pen=n('q_pensione',1300),genAiuto=n('q_gen_aiuto',0);
+  var rend=0.03,inf=0.02,aLav=Math.max(1,etaP-eta),aPens=Math.max(1,asp-etaP);
+  var rispNM=red+redP-spTot-rat-genAiuto,rispNA=rispNM*12,patNetto=ris+imm-deb;
+  var patPens=Math.max(0,ris*Math.pow(1+rend,aLav)+rispNA*((Math.pow(1+rend,aLav)-1)/rend));
+  var inpsRev=Math.max(400,pen*.6),spePens=spTot*.85*Math.pow(1+inf,aLav);
+  var gapPensM=Math.max(0,spePens-pen);
+  var youngest=fs.length>0?Math.min.apply(null,fs.map(function(f){return parseInt(f.eta)||10;})):0;
+  var aCovM=youngest>0?Math.max(15,25-youngest)+(asp-n('q_partner_eta',38)):asp-eta;
+  var fabM=(spTot-inpsRev)*12*aCovM,covM=ris+Math.min(imm*.4,80000);
+  var gapM=Math.max(0,fabM-covM),gapTot=Math.max(0,spTot-700);
+  var aCovP=gapPensM>0?Math.min(aPens,patPens/(Math.max(1,gapPensM)*12)):aPens,etaEsaur=etaP+aCovP;
+  window._calc={eta:eta,etaP:etaP,asp:asp,red:red,redP:redP,spTot:spTot,spC:spC,spQ:spQ,spF:spF,spS:spS,spSv:spSv,ris:ris,imm:imm,deb:deb,rat:rat,aDeb:aDeb,pen:pen,rend:rend,inf:inf,aLav:aLav,aPens:aPens,rispNM:rispNM,rispNA:rispNA,patNetto:patNetto,patPens:patPens,inpsRev:inpsRev,spePens:spePens,gapPensM:gapPensM,fabM:fabM,covM:covM,gapM:gapM,gapTot:gapTot,aCovP:aCovP,etaEsaur:etaEsaur,fs:fs};
   document.getElementById('ov-name').textContent=D.q_nome||'cliente';
-  document.getElementById('ov-sub').textContent=`${D.q_categ||''} · ${eta} anni · ${aLav} anni al pensionamento`;
-  document.getElementById('curve-title').textContent='Curva di Modigliani – Patrimonio nel tempo';
-  document.getElementById('ov-kpis').innerHTML=kpis([
-    {l:'Risparmio netto/mese',v:fmt(rispNM),cls:rispNM>=0?'kv-g':'kv-r',t:rispNM>=0?'kpi-g':'kpi-r'},
-    {l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},
-    {l:'Patrimonio a pensione',v:fmtK(patPens),cls:'kv-a',t:'kpi-a'},
-    {l:'Gap vs obiettivo',v:fmtK(Math.abs(n('q_obiettivo',200000)-patPens)),cls:patPens>=n('q_obiettivo',200000)?'kv-g':'kv-r',t:patPens>=n('q_obiettivo',200000)?'kpi-g':'kpi-r'},
-  ]);
-  const ppl=[{role:'Tu',name:D.q_nome?.split(' ')[0]||'Cliente',detail:`${eta} anni · ${D.q_categ||''}`,dream:D.dream_se,col:'#B8860B'}];
-  if(D.q_partner_nome)ppl.push({role:'Partner',name:D.q_partner_nome,detail:`${D.q_partner_eta} anni`,dream:D.dream_partner,col:'#8B2020'});
-  fs.forEach(f=>ppl.push({role:'Figlio/a',name:f.nome,detail:`${f.eta} anni`,dream:D.dream_figli,col:'#1D4731'}));
+  document.getElementById('ov-sub').textContent=(D.q_categ||'')+' \u00b7 '+eta+' anni \u00b7 '+aLav+' anni al pensionamento';
+  document.getElementById('curve-title').textContent='Curva di Modigliani';
+  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Risparmio/mese',v:fmt(rispNM),cls:rispNM>=0?'kv-g':'kv-r',t:rispNM>=0?'kpi-g':'kpi-r'},{l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},{l:'A pensione',v:fmtK(patPens),cls:'kv-a',t:'kpi-a'},{l:'Gap obiettivo',v:fmtK(Math.abs(n('q_obiettivo',200000)-patPens)),cls:patPens>=n('q_obiettivo',200000)?'kv-g':'kv-r',t:patPens>=n('q_obiettivo',200000)?'kpi-g':'kpi-r'}]);
+  var ppl=[{role:'Tu',name:D.q_nome?D.q_nome.split(' ')[0]:'Cliente',detail:eta+' anni \u00b7 '+(D.q_categ||''),dream:D.dream_se,col:'#B8860B'}];
+  if(D.q_partner_nome)ppl.push({role:'Partner',name:D.q_partner_nome,detail:(D.q_partner_eta||'')+' anni',dream:D.dream_partner,col:'#8B2020'});
+  fs.forEach(function(f){ppl.push({role:'Figlio/a',name:f.nome,detail:f.eta+' anni',dream:D.dream_figli,col:'#1D4731'});});
   document.getElementById('ov-people').innerHTML=pplHTML(ppl);
   document.getElementById('per-people').innerHTML=pplHTML(ppl);
-  document.getElementById('per-sub').textContent='Le persone al centro dell\'analisi.';
-  document.getElementById('risk-sub').textContent='Analisi dei rischi principali.';
+  document.getElementById('per-sub').textContent='Le persone al centro.';
+  document.getElementById('risk-sub').textContent='Analisi rischi.';
   document.getElementById('riskTable').innerHTML=riskFam();
-  document.getElementById('sc-sub').textContent='Proiezione patrimonio nei 3 scenari.';
-  document.getElementById('sc-chart-title').textContent='Patrimonio – 3 scenari su '+aLav+' anni';
-  document.getElementById('sc-kpis').innerHTML=kpis([
-    {l:'Scenario base',v:fmtK(patPens),cls:'kv-b',t:'kpi-b'},
-    {l:'Ottimistico',v:fmtK(patPens*1.35),cls:'kv-g',t:'kpi-g'},
-    {l:'Pessimistico',v:fmtK(Math.max(0,patPens*.55)),cls:'kv-r',t:'kpi-r'},
-  ]);
-  document.getElementById('pat-sub').textContent='Composizione e proiezione del patrimonio.';
-  document.getElementById('pat-kpis').innerHTML=kpis([
-    {l:'Risparmi',v:fmt(ris),cls:'kv-g',t:'kpi-g'},{l:'Immobili',v:fmt(imm),cls:'kv-b',t:'kpi-b'},{l:'Debiti',v:fmt(deb),cls:'kv-r',t:'kpi-r'},{l:'Patrimonio netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'},
-  ]);
-  document.getElementById('pat-chart2-title').textContent='Evoluzione debiti nei '+aDeb+' anni';
+  document.getElementById('sc-sub').textContent='3 scenari su '+aLav+' anni.';
+  document.getElementById('sc-chart-title').textContent='Patrimonio \u2013 3 scenari';
+  document.getElementById('sc-kpis').innerHTML=kpis([{l:'Base',v:fmtK(patPens),cls:'kv-b',t:'kpi-b'},{l:'Ottimistico',v:fmtK(patPens*1.35),cls:'kv-g',t:'kpi-g'},{l:'Pessimistico',v:fmtK(Math.max(0,patPens*.55)),cls:'kv-r',t:'kpi-r'}]);
+  document.getElementById('pat-sub').textContent='Composizione patrimonio.';
+  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Risparmi',v:fmt(ris),cls:'kv-g',t:'kpi-g'},{l:'Immobili',v:fmt(imm),cls:'kv-b',t:'kpi-b'},{l:'Debiti',v:fmt(deb),cls:'kv-r',t:'kpi-r'},{l:'Netto',v:fmtK(patNetto),cls:'kv-g',t:'kpi-g'}]);
+  document.getElementById('pat-chart2-title').textContent='Debiti su '+aDeb+' anni';
   document.getElementById('plan-sub').textContent='Azioni prioritarie.';
   document.getElementById('actionList').innerHTML=actsFam();
-  document.getElementById('nextStep').innerHTML=`Secondo incontro con <strong>${D.q_nome?.split(' ')[0]||'il cliente'}</strong>${D.q_partner_nome?' e '+D.q_partner_nome:''} per presentare il piano. Priorità: colmare gap protezione vita (${fmtK(gapM)}).`;
+  document.getElementById('nextStep').innerHTML='Secondo incontro con <strong>'+(D.q_nome?D.q_nome.split(' ')[0]:'cliente')+'</strong>'+(D.q_partner_nome?' e '+D.q_partner_nome:'')+'. Priorità: colmare gap vita ('+fmtK(gapM)+').';
 }
-
 function populateAz(){
-  const ric=n('q_ricavi',1e6),cop=n('q_costi_op',8e5),amm=n('q_amm',4e4),onf=n('q_oneri_fin',2e4);
-  const ebitda=Math.max(0,ric-cop),ebit=Math.max(0,ric-cop-amm),nopat=ebit*(1-0.24);
-  const fcf=nopat+amm-n('q_capex',5e4),debFin=n('q_debito_fin',3e5),cassa=n('q_cassa',1e5);
-  const pn=n('q_pn',4e5),attivo=n('q_attivo',1.2e6);
-  const mult=n('q_multiplo',6.5),ev=Math.max(0,ebitda*mult),eqVal=Math.max(0,ev-debFin+cassa);
-  const cre=n('q_crescita',0.03),oriz=n('q_orizzonte',7);
-  const patPers=n('q_patr_pers',2e5),rFam=n('q_reddito_fam',5e3),sFam=n('q_spese_fam',3.5e3);
-  const valObj=n('q_val_obiettivo',2e6);
-  window._calc={ric,cop,amm,onf,ebitda,ebit,nopat,fcf,debFin,cassa,pn,attivo,mult,ev,eqVal,cre,oriz,patPers,rFam,sFam,valObj};
-
+  var ric=n('q_ricavi',1e6),cop=n('q_costi_op',8e5),amm=n('q_amm',4e4),onf=n('q_oneri_fin',2e4);
+  var ebitda=Math.max(0,ric-cop),ebit=Math.max(0,ric-cop-amm),nopat=ebit*(1-0.24);
+  var fcf=nopat+amm-n('q_capex',5e4),debFin=n('q_debito_fin',3e5),cassa=n('q_cassa',1e5);
+  var pn=n('q_pn',4e5),attivo=n('q_attivo',1.2e6);
+  var mult=n('q_multiplo',6.5),ev=Math.max(0,ebitda*mult),eqVal=Math.max(0,ev-debFin+cassa);
+  var cre=n('q_crescita',0.03),oriz=n('q_orizzonte',7);
+  var patPers=n('q_patr_pers',2e5),rFam=n('q_reddito_fam',5e3),sFam=n('q_spese_fam',3.5e3);
+  var valObj=n('q_val_obiettivo',2e6);
+  window._calc={ric:ric,cop:cop,amm:amm,onf:onf,ebitda:ebitda,ebit:ebit,nopat:nopat,fcf:fcf,debFin:debFin,cassa:cassa,pn:pn,attivo:attivo,mult:mult,ev:ev,eqVal:eqVal,cre:cre,oriz:oriz,patPers:patPers,rFam:rFam,sFam:sFam,valObj:valObj};
   document.getElementById('ov-name').textContent=D.q_nome_az||'azienda';
-  document.getElementById('ov-sub').textContent=`${D.q_settore||''} · ${D.q_forma||''} · ${D.q_fase||''}`;
-  document.getElementById('curve-title').textContent='Corporate Life Cycle – FCF proiettato';
-  document.getElementById('ov-kpis').innerHTML=kpis([
-    {l:'Ricavi annui',v:fmtK(ric),cls:'kv-b',t:'kpi-b'},{l:'EBITDA',v:fmtK(ebitda),cls:ebitda>0?'kv-g':'kv-r',t:ebitda>0?'kpi-g':'kpi-r'},{l:'Enterprise Value',v:fmtK(ev),cls:'kv-a',t:'kpi-a'},{l:'Equity Value',v:fmtK(eqVal),cls:'kv-g',t:'kpi-g'},
-  ]);
-  const sk=soci(),ppl=[{role:'Titolare',name:D.q_titolare||'Titolare',detail:`${D.q_titolare_eta||'—'} anni`,dream:D.q_sogno_fam,col:'#B8860B'}];
-  sk.forEach(s=>ppl.push({role:`Socio ${s.quota}%`,name:s.nome,detail:s.ruolo||'',col:'#2E6DB4'}));
+  document.getElementById('ov-sub').textContent=(D.q_settore||'')+' \u00b7 '+(D.q_forma||'')+' \u00b7 '+(D.q_fase||'');
+  document.getElementById('ov-kpis').innerHTML=kpis([{l:'Ricavi',v:fmtK(ric),cls:'kv-b',t:'kpi-b'},{l:'EBITDA',v:fmtK(ebitda),cls:ebitda>0?'kv-g':'kv-r',t:ebitda>0?'kpi-g':'kpi-r'},{l:'EV',v:fmtK(ev),cls:'kv-a',t:'kpi-a'},{l:'Equity',v:fmtK(eqVal),cls:'kv-g',t:'kpi-g'}]);
+  var ppl=[{role:'Titolare',name:D.q_titolare||'Titolare',detail:(D.q_titolare_eta||'')+' anni',dream:D.q_sogno_fam,col:'#B8860B'}];
   document.getElementById('ov-people').innerHTML=pplHTML(ppl);
   document.getElementById('per-people').innerHTML=pplHTML(ppl);
   document.getElementById('per-sub').textContent='Struttura persone chiave.';
-  document.getElementById('risk-sub').textContent='Analisi rischi azienda e famiglia.';
   document.getElementById('riskTable').innerHTML=riskAz();
-  document.getElementById('sc-sub').textContent='Proiezione valore aziendale.';
-  document.getElementById('sc-chart-title').textContent='Enterprise Value – 3 scenari su '+oriz+' anni';
-  document.getElementById('sc-kpis').innerHTML=kpis([
-    {l:'EV base',v:fmtK(ev),cls:'kv-b',t:'kpi-b'},{l:'EV ottimistico',v:fmtK(ev*1.4*Math.pow(1+cre*1.4,oriz)),cls:'kv-g',t:'kpi-g'},{l:'EV pessimistico',v:fmtK(Math.max(0,ev*.6*Math.pow(1+Math.max(-.05,cre*.4),oriz))),cls:'kv-r',t:'kpi-r'},
-  ]);
-  document.getElementById('pat-sub').textContent='Stato patrimoniale.';
-  document.getElementById('pat-kpis').innerHTML=kpis([
-    {l:'Attivo',v:fmtK(attivo),cls:'kv-b',t:'kpi-b'},{l:'Patrimonio netto',v:fmtK(pn),cls:'kv-g',t:'kpi-g'},{l:'Debito fin.',v:fmtK(debFin),cls:'kv-r',t:'kpi-r'},{l:'Patrimonio personale',v:fmtK(patPers),cls:'kv-a',t:'kpi-a'},
-  ]);
-  document.getElementById('pat-chart2-title').textContent='EBITDA proiettato nei '+oriz+' anni';
+  document.getElementById('sc-kpis').innerHTML=kpis([{l:'EV base',v:fmtK(ev),cls:'kv-b',t:'kpi-b'},{l:'EV ott.',v:fmtK(ev*1.4*Math.pow(1+cre*1.4,oriz)),cls:'kv-g',t:'kpi-g'},{l:'EV pess.',v:fmtK(Math.max(0,ev*.6*Math.pow(1+Math.max(-.05,cre*.4),oriz))),cls:'kv-r',t:'kpi-r'}]);
+  document.getElementById('pat-kpis').innerHTML=kpis([{l:'Attivo',v:fmtK(attivo),cls:'kv-b',t:'kpi-b'},{l:'PN',v:fmtK(pn),cls:'kv-g',t:'kpi-g'},{l:'Debito',v:fmtK(debFin),cls:'kv-r',t:'kpi-r'},{l:'Pers.',v:fmtK(patPers),cls:'kv-a',t:'kpi-a'}]);
   document.getElementById('plan-sub').textContent='Piano d\'azione.';
   document.getElementById('actionList').innerHTML=actsAz();
-  document.getElementById('nextStep').innerHTML=`Incontro con <strong>${D.q_titolare||'il titolare'}</strong> per: 1) polizza key man, 2) piano successione, 3) separazione patrimoni.`;
 }
 
 function riskFam(){
-  const C=window._calc||{};
-  const mesiRis=C.ris>0?Math.round(C.ris/C.spTot):0;
-  const rows=[['Morte prematura','Copertura famiglia',C.gapM<1?'Sufficiente':'Scoperto',C.gapM<1?'g':'r',C.gapM<1?'✓ Coperto':fmtK(C.gapM)+' GAP','Polizza vita TCM'],['Malattia grave','Riserva emergenza',mesiRis>=18?'Sufficiente':mesiRis>=6?'Parziale':'Critica',mesiRis>=18?'g':mesiRis>=6?'a':'r',mesiRis+' mesi','Dread Disease'],['Invalidità parziale','Continuità reddito',C.gapTot<500?'Ok':'Rischio',C.gapTot<500?'g':'r',fmt(C.gapTot)+'/mese','Polizza IPP'],['Invalidità totale','Sostituzione reddito','Critica','r',fmt(C.gapTot)+'/mese per '+Math.round(C.etaEsaur-n('q_eta',40))+' anni','Polizza IPT'],['Longevità LTC','Copertura pensione',C.etaEsaur>=C.asp?'Ok':'Rischio',C.etaEsaur>=C.asp?'g':'r',Math.round(C.etaEsaur)+' anni coperti','Fondo pensione + LTC']];
-  return `<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Importo</th><th>Soluzione</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td><span class="risk-pill rp-${r[3]}">${r[2]}</span></td><td>${r[4]}</td><td style="color:var(--teal);font-weight:600">${r[5]}</td></tr>`).join('')}</tbody>`;
+  var C=window._calc||{};
+  var mesiRis=C.ris>0?Math.round(C.ris/C.spTot):0;
+  return '<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Importo</th><th>Soluzione</th></tr></thead><tbody>'+
+    [['Morte prematura','Famiglia',C.gapM<1?'Sufficiente':'Scoperto',C.gapM<1?'g':'r',C.gapM<1?'Coperto':fmtK(C.gapM)+' GAP','Polizza TCM'],
+     ['Malattia grave','Riserva',mesiRis>=18?'OK':mesiRis>=6?'Parziale':'Critica',mesiRis>=18?'g':mesiRis>=6?'a':'r',mesiRis+' mesi','Dread Disease'],
+     ['Invalidità','Reddito',C.gapTot<500?'OK':'Rischio',C.gapTot<500?'g':'r',fmt(C.gapTot)+'/mese','Polizza IPP/IPT'],
+     ['Longevità','Pensione',C.etaEsaur>=C.asp?'OK':'Rischio',C.etaEsaur>=C.asp?'g':'r',Math.round(C.etaEsaur)+' anni','Fondo + LTC']]
+    .map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td><span class="risk-pill rp-'+r[3]+'">'+r[2]+'</span></td><td>'+r[4]+'</td><td style="color:var(--teal);font-weight:600">'+r[5]+'</td></tr>';}).join('')+'</tbody>';
 }
 function riskAz(){
-  const rows=[['Key person','Perdita titolare',D.q_keyman==='Sì'?'Coperta':'Scoperta',D.q_keyman==='Sì'?'g':'r',fmtK((window._calc?.ev||0)*.5)+' rischio','Polizza key man'],['Invalidità titolare','Continuità operativa',D.q_inv_az==='Sì, ho un team'?'Ok':'Critica',D.q_inv_az==='Sì, ho un team'?'g':'r','Azienda dipende da te','Piano continuità + IPT'],['Concentrazione clienti','Rischio fatturato',D.q_clienti?.includes('>60%')?'Alto':'Basso',D.q_clienti?.includes('>60%')?'r':'g',D.q_clienti||'—','Diversificazione'],['Garanzie personali','Patrimonio casa',D.q_fideiuss?.includes('casa')?'Critico':'Ok',D.q_fideiuss?.includes('casa')?'r':'g',D.q_garanzie||'—','Separazione patrimoni'],['Gap successione','Passaggio generazionale',D.q_successione==='Sì, formalizzato'?'Pianificata':'Aperta',D.q_successione==='Sì, formalizzato'?'g':'a',D.q_timing||'—','Piano successione']];
-  return `<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Note</th><th>Soluzione</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td><span class="risk-pill rp-${r[3]}">${r[2]}</span></td><td>${r[4]}</td><td style="color:var(--teal);font-weight:600">${r[5]}</td></tr>`).join('')}</tbody>`;
+  return '<thead><tr><th>Rischio</th><th>Dimensione</th><th>Stato</th><th>Note</th><th>Soluzione</th></tr></thead><tbody>'+
+    [['Key person','Titolare',D.q_keyman==='S\u00ec'?'Coperta':'Scoperta',D.q_keyman==='S\u00ec'?'g':'r','Rischio valore','Polizza key man'],
+     ['Invalidità','Continuità',D.q_inv_az==='S\u00ec, ho un team'?'OK':'Critica',D.q_inv_az==='S\u00ec, ho un team'?'g':'r','Dipende da te','Piano + IPT'],
+     ['Successione','Passaggio',D.q_successione==='S\u00ec, formalizzato'?'OK':'Aperta',D.q_successione==='S\u00ec, formalizzato'?'g':'a',D.q_timing||'-','Piano successione'],
+     ['Garanzie','Patrimonio',D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0?'Critico':'OK',D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0?'r':'g',D.q_garanzie||'-','Separazione']]
+    .map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td><span class="risk-pill rp-'+r[3]+'">'+r[2]+'</span></td><td>'+r[4]+'</td><td style="color:var(--teal);font-weight:600">'+r[5]+'</td></tr>';}).join('')+'</tbody>';
 }
 function actsFam(){
-  const C=window._calc||{};
-  const acts=[];
-  if(C.gapM>30000)acts.push({i:'🛡️',t:'Polizza vita TCM · '+fmtK(C.gapM),p:'Per '+(D.q_partner_nome||'il partner')+' e i figli. Gap: '+fmtK(C.gapM)+'.',c:D.dream_partner,tag:'PRIORITÀ',tc:'at-now'});
-  acts.push({i:'🏥',t:'Polizza Dread Disease',p:'Riserva: '+Math.round(C.ris>0?C.ris/C.spTot:0)+' mesi. Il capitale alla diagnosi copre tutto.',c:null,tag:'ENTRO 60 GG',tc:'at-now'});
-  acts.push({i:'⚡',t:'Polizza IPT',p:'INPS invalido: ~€700/mese. Gap: '+fmt(C.gapTot)+'/mese.',c:D.dream_se,tag:'ENTRO 60 GG',tc:'at-now'});
-  if(C.gapPensM>200)acts.push({i:'📈',t:'Fondo pensione integrativo',p:'Gap: '+fmt(C.gapPensM)+'/mese a pensione.',c:null,tag:'ENTRO 3 MESI',tc:'at-soon'});
-  acts.push({i:'🧓',t:'Polizza LTC',p:'1 anziano su 4 ne ha bisogno. Costo medio €2.800/mese.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
-  return acts.map(a=>`<div class="action"><div class="a-icon">${a.i}</div><div class="a-body"><h4>${a.t}</h4><p>${a.p}</p>${a.c?`<div class="a-cost">${a.c}</div>`:''}<div class="a-tag ${a.tc}">▸ ${a.tag}</div></div></div>`).join('');
+  var C=window._calc||{},acts=[];
+  if(C.gapM>30000)acts.push({i:'\ud83d\udee1\ufe0f',t:'Polizza TCM \u00b7 '+fmtK(C.gapM),p:'Protezione famiglia. Gap: '+fmtK(C.gapM)+'.',c:D.dream_partner,tag:'PRIORIT\u00c0',tc:'at-now'});
+  acts.push({i:'\ud83c\udfe5',t:'Dread Disease',p:'Riserva: '+(C.ris>0?Math.round(C.ris/C.spTot):0)+' mesi.',c:null,tag:'ENTRO 60 GG',tc:'at-now'});
+  acts.push({i:'\u26a1',t:'Polizza IPT',p:'Gap invalidit\u00e0: '+fmt(C.gapTot)+'/mese.',c:D.dream_se,tag:'ENTRO 60 GG',tc:'at-now'});
+  if(C.gapPensM>200)acts.push({i:'\ud83d\udcc8',t:'Fondo pensione',p:'Gap: '+fmt(C.gapPensM)+'/mese.',c:null,tag:'ENTRO 3 MESI',tc:'at-soon'});
+  acts.push({i:'\ud83e\uddd3',t:'Polizza LTC',p:'Costo medio \u20ac2.800/mese \u00d7 8 anni.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
+  return acts.map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p>'+(a.c?'<div class="a-cost">'+a.c+'</div>':'')+'<div class="a-tag '+a.tc+'">\u25b8 '+a.tag+'</div></div></div>';}).join('');
 }
 function actsAz(){
-  const acts=[];
-  if(D.q_keyman!=='Sì')acts.push({i:'🔑',t:'Polizza key man · '+fmtK((window._calc?.ev||0)*.4),p:'Il titolare è la risorsa più critica. Premi deducibili come costo aziendale.',c:D.q_paura,tag:'PRIORITÀ',tc:'at-now'});
-  if(D.q_fideiuss?.includes('casa'))acts.push({i:'🏠',t:'Separazione patrimoni',p:'La casa del titolare è a garanzia di debiti aziendali.',c:D.q_sogno_fam,tag:'PRIORITÀ',tc:'at-now'});
-  if(D.q_successione!=='Sì, formalizzato')acts.push({i:'📜',t:'Piano successione',p:'Obiettivo: '+D.q_obiettivo_az+'. Timing: '+D.q_timing+'.',c:D.q_sogno_eredi,tag:'ENTRO 6 MESI',tc:'at-now'});
-  acts.push({i:'⚡',t:'Polizza IPT titolare',p:D.q_inv_az==='No, dipende da me'?'Se il titolare si invalida, l\'azienda si ferma.':'Serve IPT + piano continuità.',c:null,tag:'ENTRO 60 GG',tc:'at-soon'});
-  if(D.q_prev_az==='Solo INPS / cassa'||D.q_prev_az==='No')acts.push({i:'📈',t:'Previdenza titolare',p:'Solo INPS non basta. Fondo pensione aziendale con deducibilità.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
-  return acts.map(a=>`<div class="action"><div class="a-icon">${a.i}</div><div class="a-body"><h4>${a.t}</h4><p>${a.p}</p>${a.c?`<div class="a-cost">${a.c}</div>`:''}<div class="a-tag ${a.tc}">▸ ${a.tag}</div></div></div>`).join('');
+  var acts=[];
+  if(D.q_keyman!=='S\u00ec')acts.push({i:'\ud83d\udd11',t:'Polizza key man',p:'Titolare risorsa pi\u00f9 critica.',c:D.q_paura,tag:'PRIORIT\u00c0',tc:'at-now'});
+  if(D.q_fideiuss&&D.q_fideiuss.indexOf('casa')>=0)acts.push({i:'\ud83c\udfe0',t:'Separazione patrimoni',p:'Casa a garanzia debiti aziendali.',c:D.q_sogno_fam,tag:'PRIORIT\u00c0',tc:'at-now'});
+  acts.push({i:'\u26a1',t:'Polizza IPT titolare',p:'Continuit\u00e0 operativa.',c:null,tag:'ENTRO 60 GG',tc:'at-soon'});
+  acts.push({i:'\ud83d\udcc8',t:'Previdenza titolare',p:'Fondo pensione integrativo.',c:null,tag:'ENTRO ANNO',tc:'at-plan'});
+  return acts.map(function(a){return '<div class="action"><div class="a-icon">'+a.i+'</div><div class="a-body"><h4>'+a.t+'</h4><p>'+a.p+'</p>'+(a.c?'<div class="a-cost">'+a.c+'</div>':'')+'<div class="a-tag '+a.tc+'">\u25b8 '+a.tag+'</div></div></div>';}).join('');
 }
 function buildRawTable(){
-  const skip=['tipo','data','ora','figli','soci','_ebitda','_ebit','_margin'];
-  document.getElementById('rawTable').innerHTML=`<thead><tr><th>Campo</th><th>Valore</th></tr></thead><tbody>${Object.entries(D).filter(([k])=>!skip.includes(k)&&D[k]).map(([k,v])=>`<tr><td style="color:var(--grey)">${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
+  var skip=['tipo','data','ora','figli','soci','_ebitda','_ebit','_margin'];
+  var rows=[];Object.keys(D).forEach(function(k){if(skip.indexOf(k)<0&&D[k])rows.push([k,D[k]]);});
+  document.getElementById('rawTable').innerHTML='<thead><tr><th>Campo</th><th>Valore</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td style="color:var(--grey)">'+r[0]+'</td><td>'+r[1]+'</td></tr>';}).join('')+'</tbody>';
 }
 
 // ═══════════════════════════════════════
-// CHARTS
+// CHARTS (compressi ma funzionanti)
 // ═══════════════════════════════════════
-function buildChartsForPanel(pid){tipo==='famiglie'?buildFamCharts(pid):buildAzCharts(pid);}
-
+function buildChartsForPanel(pid){if(tipo==='famiglie')buildFamCharts(pid);else buildAzCharts(pid);}
 function buildFamCharts(pid){
-  const C=window._calc||{};if(!C.eta)return;
-  const {eta,etaP,asp,ris,imm,deb,rat,aDeb,rend,aLav,aPens,rispNA,patNetto,patPens,spTot,spC,spQ,spF,spS,spSv,gapPensM}=C;
-  const N=aLav+aPens+1,yrs=Array.from({length:N},(_,i)=>i);
-
+  var C=window._calc||{};if(!C.eta)return;
+  var N=C.aLav+C.aPens+1,yrs=[],i,w;for(i=0;i<N;i++)yrs.push(i);
   if(pid==='overview'||pid==='scenari'){
-    const mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();let w=patNetto;const pos=[],neg=[];yrs.forEach(i=>{if(i<=aLav)w=w*(1+rend)+rispNA;else w=Math.max(patNetto*-.5,w*(1+rend)-gapPensM*12);pos.push(Math.max(0,Math.round(w)));neg.push(Math.min(0,Math.round(w)));});
-    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(i=>eta+i),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4},{data:neg,fill:true,backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.5)',borderWidth:2,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}}});}
-    const dc=document.getElementById('costDonut');if(dc){if(CH.costDonut)CH.costDonut.destroy();const items=[spC,spQ,spF,spS,spSv].filter(v=>v>0),lbls=['Casa','Quotidiano','Figli','Salute','Svago'].slice(0,items.length);CH.costDonut=new Chart(dc,{type:'doughnut',data:{labels:lbls,datasets:[{data:items,backgroundColor:['rgba(229,62,62,.75)','rgba(214,158,46,.75)','rgba(56,161,105,.75)','rgba(49,130,206,.75)','rgba(128,90,213,.75)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#666'}}}}});}
-    if(pid==='scenari'||document.getElementById('scenChart')){const sc=document.getElementById('scenChart');if(sc&&!CH.scenChart){let wb=patNetto,wo=patNetto,wp=patNetto;const base=[],opt=[],pess=[];yrs.forEach(i=>{if(i<=aLav){wb=wb*(1+rend)+rispNA;wo=wo*(1+rend*1.5)+rispNA*1.3;wp=Math.max(-200000,wp*(1+rend*.5)+rispNA*.5);}else{wb=Math.max(0,wb*(1+rend)-gapPensM*12);wo=Math.max(0,wo*(1+rend*1.5)-gapPensM*10);wp=Math.max(-200000,wp*(1+rend*.3)-gapPensM*14);}base.push(Math.round(wb));opt.push(Math.round(wo));pess.push(Math.round(wp));});CH.scenChart=new Chart(sc,{type:'line',data:{labels:yrs.map(i=>eta+i),datasets:[{data:base,borderColor:'rgba(46,109,180,.8)',backgroundColor:'rgba(46,109,180,.08)',fill:true,borderWidth:2.5,pointRadius:0,tension:.4,label:'Base'},{data:opt,borderColor:'rgba(26,95,80,.8)',backgroundColor:'rgba(26,95,80,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Ottimistico'},{data:pess,borderColor:'rgba(139,32,32,.7)',backgroundColor:'rgba(139,32,32,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Pessimistico'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:11}}}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}});}}
+    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();w=C.patNetto;var pos=[],neg=[];yrs.forEach(function(i){if(i<=C.aLav)w=w*(1+C.rend)+C.rispNA;else w=Math.max(C.patNetto*-.5,w*(1+C.rend)-C.gapPensM*12);pos.push(Math.max(0,Math.round(w)));neg.push(Math.min(0,Math.round(w)));});
+    CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return C.eta+i;}),datasets:[{data:pos,fill:true,backgroundColor:'rgba(29,95,80,.15)',borderColor:'rgba(26,95,80,.7)',borderWidth:2.5,pointRadius:0,tension:.4},{data:neg,fill:true,backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.5)',borderWidth:2,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:9},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},grid:{color:'rgba(0,0,0,.05)'},position:'right'}}});}
   }
   if(pid==='rischi'){
-    const rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();const mesiRis=C.ris>0?C.ris/C.spTot:0;CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Morte','Malattia','Inv. parz.','Inv. totale','Longevità','LTC'],datasets:[{label:'Rischio',data:[C.gapM>50000?90:C.gapM>20000?65:35,mesiRis<6?90:mesiRis<12?70:40,C.gapTot>500?80:50,85,C.etaEsaur<C.asp?80:55,85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
-    const gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['Morte','Malattia','LTC'],datasets:[{label:'Disponibile',data:[C.covM,ris,patPens],backgroundColor:'rgba(26,95,80,.65)',borderRadius:4},{label:'Necessario',data:[C.fabM,spTot*12,2800*12*8],backgroundColor:'rgba(139,32,32,.5)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
-  }
-  if(pid==='patrimonio'){
-    const pp=document.getElementById('patPie');if(pp){if(CH.patPie)CH.patPie.destroy();CH.patPie=new Chart(pp,{type:'doughnut',data:{labels:['Risparmi','Immobili','Debiti'],datasets:[{data:[ris,imm,deb],backgroundColor:['rgba(26,95,80,.7)','rgba(46,109,180,.7)','rgba(139,32,32,.7)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
-    const pl=document.getElementById('patLine');if(pl){if(CH.patLine)CH.patLine.destroy();const dY=Array.from({length:aDeb+1},(_,i)=>i);CH.patLine=new Chart(pl,{type:'line',data:{labels:dY.map(i=>'Anno '+i),datasets:[{data:dY.map(i=>Math.max(0,deb-rat*12*i)),borderColor:'rgba(139,32,32,.7)',fill:true,backgroundColor:'rgba(139,32,32,.08)',borderWidth:2,pointRadius:0,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9},maxTicksLimit:8}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+    var rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();var mesiRis=C.ris>0?C.ris/C.spTot:0;CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Morte','Malattia','Inv.parz','Inv.tot','Longevità','LTC'],datasets:[{label:'Rischio',data:[C.gapM>50000?90:C.gapM>20000?65:35,mesiRis<6?90:mesiRis<12?70:40,C.gapTot>500?80:50,85,C.etaEsaur<C.asp?80:55,85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
+    var gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['Morte','Malattia','LTC'],datasets:[{label:'Disponibile',data:[C.covM,C.ris,C.patPens],backgroundColor:'rgba(26,95,80,.65)',borderRadius:4},{label:'Necessario',data:[C.fabM,C.spTot*12,2800*12*8],backgroundColor:'rgba(139,32,32,.5)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
   }
 }
-
 function buildAzCharts(pid){
-  const C=window._calc||{};if(!C.ric)return;
-  const {ric,ebitda,ev,cre,oriz,valObj,fcf,cop,amm,debFin,cassa,pn}=C;
+  var C=window._calc||{};if(!C.ric)return;
   if(pid==='overview'||pid==='scenari'){
-    const mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();const yrs=Array.from({length:oriz+1},(_,i)=>i);CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(i=>'Anno '+i),datasets:[{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre,i)*C.mult)),borderColor:'rgba(46,109,180,.8)',fill:false,borderWidth:2.5,pointRadius:0,tension:.4,label:'EV Base'},{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre*1.4,i)*C.mult*1.2)),borderColor:'rgba(26,95,80,.7)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Ottimistico'},{data:yrs.map(i=>Math.max(0,Math.round(ebitda*Math.pow(1+Math.max(-.05,cre*.4),i)*C.mult*.7))),borderColor:'rgba(139,32,32,.6)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Pessimistico'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
-    const cd=document.getElementById('costDonut');if(cd){if(CH.costDonut)CH.costDonut.destroy();CH.costDonut=new Chart(cd,{type:'doughnut',data:{labels:['Costi op.','Ammort.','Oneri fin.','EBITDA'],datasets:[{data:[cop-amm,amm,C.onf,ebitda],backgroundColor:['rgba(139,32,32,.65)','rgba(138,64,10,.6)','rgba(184,134,11,.6)','rgba(26,95,80,.7)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
-  }
-  if(pid==='rischi'){
-    const rc=document.getElementById('riskRadar');if(rc){if(CH.riskRadar)CH.riskRadar.destroy();CH.riskRadar=new Chart(rc,{type:'radar',data:{labels:['Key Person','Clienti','Garanzie','Successione','Liquidità','Invalidità'],datasets:[{label:'Rischio',data:[D.q_keyman==='Sì'?20:90,D.q_clienti?.includes('>60%')?85:40,D.q_fideiuss?.includes('casa')?90:20,D.q_successione==='Sì, formalizzato'?15:80,C.cassa>ric*.1?30:70,D.q_inv_az==='Sì, ho un team'?25:85],backgroundColor:'rgba(139,32,32,.15)',borderColor:'rgba(139,32,32,.6)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{color:'#666',font:{size:10}},suggestedMin:0,suggestedMax:100}}});}
-    const gb=document.getElementById('gapBar');if(gb){if(CH.gapBar)CH.gapBar.destroy();CH.gapBar=new Chart(gb,{type:'bar',data:{labels:['EV attuale','Target exit','Patr. pers.'],datasets:[{label:'Valore',data:[ev,valObj,C.patPers],backgroundColor:['rgba(46,109,180,.65)','rgba(26,95,80,.65)','rgba(184,134,11,.65)'],borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
-  }
-  if(pid==='patrimonio'){
-    const pp=document.getElementById('patPie');if(pp){if(CH.patPie)CH.patPie.destroy();CH.patPie=new Chart(pp,{type:'doughnut',data:{labels:['PN','Debito','Cassa'],datasets:[{data:[pn,debFin,cassa],backgroundColor:['rgba(26,95,80,.7)','rgba(139,32,32,.7)','rgba(184,134,11,.65)']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10}}}}});}
-    const pl=document.getElementById('patLine');if(pl){if(CH.patLine)CH.patLine.destroy();const yrs=Array.from({length:oriz+1},(_,i)=>i);CH.patLine=new Chart(pl,{type:'line',data:{labels:yrs.map(i=>'Anno '+i),datasets:[{data:yrs.map(i=>Math.round(ebitda*Math.pow(1+cre,i))),borderColor:'rgba(26,95,80,.7)',fill:true,backgroundColor:'rgba(26,95,80,.08)',borderWidth:2.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:v=>fmtK(v)},position:'right'}}});}
+    var mc=document.getElementById('mainCurve');if(mc){if(CH.mainCurve)CH.mainCurve.destroy();var yrs=[],i;for(i=0;i<=C.oriz;i++)yrs.push(i);CH.mainCurve=new Chart(mc,{type:'line',data:{labels:yrs.map(function(i){return 'Anno '+i;}),datasets:[{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre,i)*C.mult);}),borderColor:'rgba(46,109,180,.8)',fill:false,borderWidth:2.5,pointRadius:0,tension:.4,label:'EV Base'},{data:yrs.map(function(i){return Math.round(C.ebitda*Math.pow(1+C.cre*1.4,i)*C.mult*1.2);}),borderColor:'rgba(26,95,80,.7)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Ott.'},{data:yrs.map(function(i){return Math.max(0,Math.round(C.ebitda*Math.pow(1+Math.max(-.05,C.cre*.4),i)*C.mult*.7));}),borderColor:'rgba(139,32,32,.6)',fill:false,borderWidth:2,pointRadius:0,tension:.4,label:'EV Pess.'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#666',font:{size:10}}}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{ticks:{color:'#999',font:{size:9},callback:function(v){return fmtK(v);}},position:'right'}}});}
   }
 }
 
 // ═══════════════════════════════════════
-// EXCEL
+// EXCEL & WHATSAPP
 // ═══════════════════════════════════════
 function generateExcel(){
-  const wb=XLSX.utils.book_new();
-  if(tipo==='famiglie'){
-    const C=window._calc||{};
-    const sum=[['ANALISI FAMILIARE – MODIGLIANI','',''],[D.q_nome||'Cliente','Data:',D.data||''],['','',''],['REDDITO','',''],['Reddito netto mensile',C.red,'€'],['Spese mensili',C.spTot,'€'],['Risparmio netto/mese',C.rispNM,'€'],['','',''],['PATRIMONIO','',''],['Risparmi',C.ris,'€'],['Immobili',C.imm,'€'],['Debiti',C.deb,'€'],['Patrimonio netto',C.patNetto,'€'],['','',''],['PREVISIONI','',''],['Patrimonio a pensione',C.patPens,'€'],['Obiettivo',n('q_obiettivo',0),'€'],['Gap',Math.abs(C.patPens-n('q_obiettivo',0)),'€']];
-    const ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
-  }else{
-    const C=window._calc||{};
-    const sum=[['ANALISI AZIENDALE – DAMODARAN','',''],[D.q_nome_az||'Azienda','Data:',D.data||''],['','',''],['CONTO ECONOMICO','',''],['Ricavi',C.ric,'€'],['EBITDA',C.ebitda,'€'],['FCF',Math.round(C.fcf),'€'],['','',''],['VALUTAZIONE','',''],['Enterprise Value',C.ev,'€'],['Equity Value',C.eqVal,'€'],['Target exit',C.valObj,'€']];
-    const ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
-  }
-  const name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');
-  XLSX.writeFile(wb,`analisi_${name}_${D.data?.replace(/\//g,'-')||'report'}.xlsx`);
-  toast('⬇️ Excel scaricato');
+  var wb=XLSX.utils.book_new(),C=window._calc||{},sum=[['REPORT','',''],[D.q_nome||D.q_nome_az||'Cliente','Data:',D.data||'']];
+  var ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:30},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Riepilogo');
+  var name=(tipo==='famiglie'?(D.q_nome||'cliente'):(D.q_nome_az||'azienda')).toLowerCase().replace(/\s+/g,'_');
+  XLSX.writeFile(wb,'analisi_'+name+'_'+(D.data||'report').replace(/\//g,'-')+'.xlsx');
+  toast('\u2b07\ufe0f Excel scaricato');
 }
-
-// ═══════════════════════════════════════
-// WHATSAPP
-// ═══════════════════════════════════════
 function sendWA(){
-  const C=window._calc||{};
-  let txt='';
-  if(tipo==='famiglie'){
-    const fs=figli();
-    txt=`📊 *Analisi Familiare – ${D.q_nome||'Cliente'}*\n👤 ${C.eta} anni · ${D.q_categ||''}\n💰 Reddito: ${fmt(C.red||0)}/mese\n🏦 Patrimonio: ${fmtK(C.patNetto||0)}\n📈 Pensione: ${fmtK(C.patPens||0)} stimata\n⚠️ Gap protezione: ${fmtK(C.gapM||0)}\n\n🎯 Azioni prioritarie:\n1. Polizza vita TCM\n2. Dread Disease\n3. Polizza IPT`;
-  }else{
-    txt=`🏢 *Analisi Aziendale – ${D.q_nome_az||'Azienda'}*\n📊 ${D.q_settore||''} · ${D.q_fase||''}\n💰 Ricavi: ${fmtK(C.ric||0)}/anno\n📈 EBITDA: ${fmtK(C.ebitda||0)}\n💎 EV: ${fmtK(C.ev||0)}\n\n🎯 Azioni:\n1. Polizza key man\n2. Piano successione\n3. Separazione patrimoni`;
-  }
+  var C=window._calc||{},txt=tipo==='famiglie'?
+    '\ud83d\udcca *Analisi Familiare \u2013 '+(D.q_nome||'Cliente')+'*\n\uD83D\uDC64 '+C.eta+' anni\n\uD83D\uDCB0 Reddito: '+fmt(C.red||0)+'/mese\n\uD83C\uDFE6 Patrimonio: '+fmtK(C.patNetto||0)+'\n\u26A0\ufe0f Gap: '+fmtK(C.gapM||0):
+    '\ud83c\udfe2 *Analisi Aziendale \u2013 '+(D.q_nome_az||'Azienda')+'*\n\uD83D\uDCC8 Ricavi: '+fmtK(C.ric||0)+'\n\uD83D\uDCB0 EBITDA: '+fmtK(C.ebitda||0)+'\n\uD83C\uDFF0 EV: '+fmtK(C.ev||0);
   window.open('https://wa.me/?text='+encodeURIComponent(txt));
-  toast('📱 WhatsApp aperto');
+  toast('\ud83d\udcf1 WhatsApp aperto');
 }
 
 // ═══════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════
 function toast(msg,type){
-  const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type==='err'?' err':'');t.classList.add('show');
-  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2500);
+  var t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type==='err'?' err':'');t.classList.add('show');
+  clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove('show');},2500);
 }
 </script>
 </body>
